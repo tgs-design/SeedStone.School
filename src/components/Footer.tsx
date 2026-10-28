@@ -20,6 +20,8 @@ export default function Footer() {
             <li><Link to="/blogs">Blogs</Link></li>
             <li><Link to="/contact">Contact Us</Link></li>
             <li><Link to="/login">Login / Signup</Link></li>
+            <li><Link to="/policies/privacy">Privacy notice (draft)</Link></li>
+            <li><Link to="/policies/terms">Website terms (draft)</Link></li>
           </ul>
         </div>
 

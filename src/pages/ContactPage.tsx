@@ -37,7 +37,6 @@ export default function ContactPage() {
     else if (!/^(?:\+91|91|0)?[6-9]\d{9}$/.test(formData.mobile.trim())) nextErrors.mobile = 'Enter a valid Indian mobile number.'
     if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) nextErrors.email = 'Enter a valid email address.'
     if (!formData.classLevel.trim()) nextErrors.classLevel = 'Please select a class.'
-    if (!formData.message.trim()) nextErrors.message = 'Message is required.'
 
     return nextErrors
   }
@@ -104,8 +103,8 @@ export default function ContactPage() {
                 {errors.classLevel ? <span id="contact-class-error" className="field-error">{errors.classLevel}</span> : null}
               </div>
               <div className="input-group">
-                <label htmlFor="contact-message">Message</label>
-                <textarea id="contact-message" rows={4} required value={formData.message} onChange={(event) => handleChange('message', event.target.value)} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? 'contact-message-error' : undefined} />
+                <label htmlFor="contact-message">Message (optional)</label>
+                <textarea id="contact-message" rows={4} value={formData.message} onChange={(event) => handleChange('message', event.target.value)} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? 'contact-message-error' : undefined} />
                 {errors.message ? <span id="contact-message-error" className="field-error">{errors.message}</span> : null}
               </div>
 

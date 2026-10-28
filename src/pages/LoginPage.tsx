@@ -1,12 +1,19 @@
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useDemoState } from '../portal/useDemoState'
+import { demoRoleLabels } from '../portal/demoTypes'
+import type { DemoRole } from '../portal/demoTypes'
 
 type AuthField = 'name' | 'email' | 'password'
 
 export default function LoginPage() {
+  const navigate = useNavigate()
+  const { signInAs } = useDemoState()
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [showPassword, setShowPassword] = useState(false)
+  const [demoRole, setDemoRole] = useState<DemoRole>('student')
   const [formData, setFormData] = useState({ name: '', email: '', password: '' })
   const [errors, setErrors] = useState<Partial<Record<AuthField, string>>>({})
   const [notice, setNotice] = useState('')
@@ -42,6 +49,11 @@ export default function LoginPage() {
     setNotice('Authentication is a frontend prototype. No account was created and no login was attempted.')
   }
 
+  const enterDemo = () => {
+    signInAs(demoRole)
+    navigate('/portal')
+  }
+
   return (
     <section className="page-section auth-section">
       <div className="container auth-shell">
@@ -58,6 +70,17 @@ export default function LoginPage() {
           <h1>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h1>
           <p className="auth-subtext">Frontend prototype only. No real authentication is active yet.</p>
 
+          <section className="demo-login">
+            <p className="portal-overline">Explore a role-based demo</p>
+            <p>Choose a fictional role to explore its sample workspace. This is not a secure login.</p>
+            <label htmlFor="demo-role">Demo role</label>
+            <select id="demo-role" value={demoRole} onChange={(event) => setDemoRole(event.target.value as DemoRole)}>
+              {Object.entries(demoRoleLabels).map(([role, label]) => <option value={role} key={role}>{label}</option>)}
+            </select>
+            <button type="button" className="primary-button full-width" onClick={enterDemo}>Explore as {demoRoleLabels[demoRole]}</button>
+          </section>
+
+          <div className="auth-divider"><span>or use the prototype form</span></div>
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             {mode === 'signup' ? (
               <div className="input-group">

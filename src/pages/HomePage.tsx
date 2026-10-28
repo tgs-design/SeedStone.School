@@ -1,8 +1,9 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowDownRight, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Accordion from '../components/Accordion'
+import HeroLearningWorld from '../components/HeroLearningWorld'
 import SectionHeading from '../components/SectionHeading'
-import { audienceCards, beyondTextbookAreas, faqs, seedstoneFeatures } from '../data/siteData'
+import { audienceCards, beyondTextbookAreas, faqs, primaryClassBands, seedstoneFeatures } from '../data/siteData'
 
 const learningJourney = [
   { title: 'Explore Seedstone', description: 'Get to know the school’s vision and proposed approach.' },
@@ -21,14 +22,11 @@ export default function HomePage() {
             <h1>We’re Reimagining What School Can Be.</h1>
             <p className="lead">A different approach to schooling, designed around how children learn, what they love, and who they want to become.</p>
             <div className="button-row">
-              <button type="button" className="primary-button" onClick={() => window.dispatchEvent(new CustomEvent('open-enquiry'))}>Inquire Now</button>
-              <Link to="/curriculum" className="secondary-button">Explore Our Curriculum</Link>
+              <a className="primary-button" href="#seedstone-idea">Explore Seedstone <ArrowDownRight size={17} /></a>
+              <button type="button" className="secondary-button" onClick={() => window.dispatchEvent(new CustomEvent('open-enquiry'))}>Talk to Our Counsellor</button>
             </div>
           </div>
-          <figure className="hero-visual">
-            <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80" alt="Illustrative image of children learning together; not a Seedstone classroom" fetchPriority="high" />
-            <figcaption>Illustrative image</figcaption>
-          </figure>
+          <HeroLearningWorld />
         </div>
       </section>
 
@@ -88,6 +86,16 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      <section className="page-section class-groups-section">
+        <div className="container">
+          <SectionHeading eyebrow="Class groups" title="A learning journey for different stages" description="Class bands are shown for orientation only. Programme availability, subjects, and pathways remain pending confirmation." />
+          <div className="class-band-list">
+            {primaryClassBands.map((band) => <article className="class-band-item" key={band.id}><span>{band.title}</span><p>{band.description}</p></article>)}
+          </div>
+          <Link to="/curriculum" className="inline-link">Review the proposed learning approach <ArrowRight size={16} /></Link>
         </div>
       </section>
 
