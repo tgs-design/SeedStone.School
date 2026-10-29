@@ -6,17 +6,65 @@ export type NavItem = {
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
   { label: 'About Us', path: '/about' },
+  { label: 'Learning Experience', path: '/learning-experience' },
   { label: 'Curriculum', path: '/curriculum' },
+  { label: 'Beyond Academics', path: '/activities' },
   { label: 'Blogs', path: '/blogs' },
-  { label: 'Contact Us', path: '/contact' },
-  { label: 'Login / Signup', path: '/login' },
+  { label: 'Contact', path: '/contact' },
 ]
 
 export const primaryClassBands = [
-  { id: '1-5', title: 'Classes 1–5', description: 'An illustrative focus on curiosity, understanding, and foundational learning.' },
-  { id: '6-8', title: 'Classes 6–8', description: 'An illustrative focus on concepts, guided practice, and subject connections.' },
-  { id: '9-10', title: 'Classes 9–10', description: 'An illustrative focus on concept-building, revision, and thoughtful practice.' },
-  { id: '11-12', title: 'Classes 11–12', description: 'An illustrative focus on sustained practice and meaningful application.' },
+  { id: 'primary', title: 'Primary', classes: 'Classes 1–5', description: 'An opportunity to build foundations through questions, practice, and exploration.' },
+  { id: 'middle', title: 'Middle', classes: 'Classes 6–8', description: 'An opportunity to connect ideas and develop independent learning habits.' },
+  { id: 'secondary', title: 'Secondary', classes: 'Classes 9–10', description: 'An opportunity to deepen understanding and practise applying ideas.' },
+  { id: 'senior-secondary', title: 'Senior Secondary', classes: 'Classes 11–12', description: 'An opportunity to explore subjects in greater depth and consider next steps.' },
+]
+
+const classStages = [
+  { range: [1, 5], band: 'Primary', anchor: 'primary' },
+  { range: [6, 8], band: 'Middle', anchor: 'middle' },
+  { range: [9, 10], band: 'Secondary', anchor: 'secondary' },
+  { range: [11, 12], band: 'Senior Secondary', anchor: 'senior-secondary' },
+] as const
+
+export const curriculumClasses = Array.from({ length: 12 }, (_, index) => {
+  const classNumber = index + 1
+  const stage = classStages.find(({ range }) => classNumber >= range[0] && classNumber <= range[1])
+
+  return {
+    id: `class-${classNumber}`,
+    label: `Class ${classNumber}`,
+    band: stage?.band ?? 'Class group',
+    bandId: stage?.anchor ?? 'primary',
+    overview: `The proposed learning experience for Class ${classNumber} is awaiting academic review and confirmation.`,
+  }
+})
+
+export const learningExperienceThemes = [
+  {
+    title: 'Core academic learning',
+    status: 'Awaiting confirmation',
+    description: 'The subject catalogue, teaching model, and class-wise programme are awaiting academic approval.',
+    examples: ['Concept explanations', 'Subject learning', 'Learning goals'],
+  },
+  {
+    title: 'Practice and reflection',
+    status: 'Planned',
+    description: 'A proposed cycle for trying ideas, revisiting learning, and reflecting on next steps.',
+    examples: ['Handwritten practice and note-taking', 'Interactive quizzes and activities', 'Feedback and reflection'],
+  },
+  {
+    title: 'Projects and real-world skills',
+    status: 'Awaiting confirmation',
+    description: 'Potential enrichment areas to explore; none are confirmed as active programmes.',
+    examples: ['STEM and project-based learning', 'Financial literacy', 'Entrepreneurship', 'Competitive-exam preparation'],
+  },
+  {
+    title: 'Wellbeing and future readiness',
+    status: 'Awaiting confirmation',
+    description: 'Proposed themes for future consideration, subject to staffing and programme approval.',
+    examples: ['Digital citizenship and responsible AI', 'Student wellbeing and mentorship', 'Career exploration', 'Collaboration and student portfolios'],
+  },
 ]
 
 export const seedstoneFeatures = [

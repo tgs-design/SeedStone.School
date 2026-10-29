@@ -5,6 +5,7 @@ import { blogPosts } from '../data/siteData'
 export default function BlogDetailPage() {
   const { slug } = useParams()
   const post = blogPosts.find((item) => item.id === slug)
+  const relatedPosts = blogPosts.filter((item) => item.id !== post?.id).slice(0, 3)
 
   if (!post) {
     return (
@@ -32,6 +33,21 @@ export default function BlogDetailPage() {
           <p>{post.excerpt}</p>
           <p>When the team has approved final copy, this area can be replaced with a fully researched article, author details, and verified publish dates. For now, the layout remains intentionally editable and clearly marked as draft material.</p>
         </div>
+        <section className="related-drafts" aria-labelledby="related-drafts-title">
+          <h2 id="related-drafts-title">More draft ideas</h2>
+          <div className="blog-grid">
+            {relatedPosts.map((relatedPost) => (
+              <article className="blog-card" key={relatedPost.id}>
+                <div className="blog-card-body">
+                  <span className="blog-tag">Draft article</span>
+                  <h3>{relatedPost.title}</h3>
+                  <p>{relatedPost.excerpt}</p>
+                  <div className="blog-foot"><span>{relatedPost.readTime}</span><Link to={`/blogs/${relatedPost.id}`}>Read draft</Link></div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       </div>
     </section>
   )

@@ -1,12 +1,16 @@
 :root {
-  --red: #c41625;
-  --navy: #082b43;
-  --cream: #fff0d4;
+  --red: #C11720;
+  --navy: #0C3249;
+  --teal: #518384;
+  --sage: #ABB7A7;
+  --cream: #FFF1D6;
+  --light-grey: #E6E8EB;
   --white: #ffffff;
-  --muted: rgba(8, 43, 67, 0.68);
+  --muted: rgba(12, 50, 73, 0.68);
   --page-bg: var(--white);
-  --font-display: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
-  --shadow-soft: 0 12px 30px rgba(8, 43, 67, 0.08);
+  --font-display: 'Quicksand', sans-serif;
+  --font-body: 'Inter Tight', sans-serif;
+  --shadow-soft: 0 12px 30px rgba(12, 50, 73, 0.08);
   --radius: 22px;
 }
 
@@ -16,12 +20,11 @@ html {
 
 body {
   margin: 0;
-  font-family: Inter, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   background: var(--page-bg);
   color: var(--navy);
   line-height: 1.6;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 #root {
@@ -57,7 +60,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgba(196, 22, 37, 0.22);
+  outline: 3px solid rgba(193, 23, 32, 0.22);
   outline-offset: 2px;
 }
 

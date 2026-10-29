@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 const policyTitles: Record<string, string> = {
   privacy: 'Privacy notice',
   terms: 'Website terms',
+  refund: 'Refund and withdrawal policy',
 }
 
 export default function PolicyDraftPage() {

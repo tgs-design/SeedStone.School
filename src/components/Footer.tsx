@@ -8,33 +8,40 @@ export default function Footer() {
           <Link to="/" className="brand footer-brand" aria-label="Seedstone School home">
             <img src="/seedstone-logo.svg" alt="Seedstone School" className="brand-logo footer-logo" />
           </Link>
-          <p className="footer-copy">Seedstone School is developing a thoughtful approach to learning, centered on understanding and each child’s growth.</p>
+          <p className="footer-copy">A next-generation online school helping every child learn, grow, and discover their own potential.</p>
         </div>
 
         <div>
           <h3>Explore</h3>
           <ul className="footer-links">
-            <li><Link to="/">Home</Link></li>
             <li><Link to="/about">About Us</Link></li>
+            <li><Link to="/learning-experience">Learning Experience</Link></li>
             <li><Link to="/curriculum">Curriculum</Link></li>
+            <li><Link to="/activities">Beyond Academics</Link></li>
             <li><Link to="/blogs">Blogs</Link></li>
-            <li><Link to="/contact">Contact Us</Link></li>
-            <li><Link to="/login">Login / Signup</Link></li>
-            <li><Link to="/policies/privacy">Privacy notice (draft)</Link></li>
-            <li><Link to="/policies/terms">Website terms (draft)</Link></li>
           </ul>
         </div>
 
         <div>
-          <h3>Contact</h3>
+          <h3>Support</h3>
           <ul className="footer-links">
-            <li>Contact details are pending confirmation.</li>
-            <li><Link to="/contact">View enquiry options</Link></li>
+            <li><Link to="/contact">Contact Us</Link></li>
+            <li><Link to="/login">Login</Link></li>
+            <li><button type="button" onClick={() => window.dispatchEvent(new CustomEvent('open-enquiry'))}>Enquire about admissions</button></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Policies</h3>
+          <ul className="footer-links">
+            <li><Link to="/policies/privacy">Privacy policy <span>(draft)</span></Link></li>
+            <li><Link to="/policies/terms">Terms and conditions <span>(draft)</span></Link></li>
+            <li><Link to="/policies/refund">Refund and withdrawal policy <span>(draft)</span></Link></li>
           </ul>
         </div>
       </div>
       <div className="container footer-bottom">
-        <span>© 2026 Seedstone School. All rights reserved.</span>
+        <span>© 2026 Seedstone School.</span>
       </div>
     </footer>
   )

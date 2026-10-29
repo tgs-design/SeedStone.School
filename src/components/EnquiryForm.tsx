@@ -8,22 +8,25 @@ type EnquiryFormProps = {
 type FormState = {
   name: string
   mobile: string
+  email: string
   classLevel: string
+  city: string
+  contactPreference: string
+  message: string
 }
 
 type FormErrors = Partial<Record<keyof FormState, string>>
 
-const classOptions = [
-  'Classes 1–5',
-  'Classes 6–8',
-  'Classes 9–10',
-  'Classes 11–12',
-]
+const classOptions = Array.from({ length: 12 }, (_, index) => `Class ${index + 1}`)
 
 const initialValues: FormState = {
   name: '',
   mobile: '',
   classLevel: '',
+  email: '',
+  city: '',
+  contactPreference: 'Phone',
+  message: '',
 }
 
 export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
@@ -43,6 +46,10 @@ export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
       nextErrors.mobile = 'Mobile number is required.'
     } else if (!/^(?:\+91|91|0)?[6-9]\d{9}$/.test(values.mobile.replace(/[\s()-]/g, ''))) {
       nextErrors.mobile = 'Enter a valid Indian mobile number.'
+    }
+
+    if (values.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+      nextErrors.email = 'Enter a valid email address.'
     }
 
     if (!values.classLevel.trim()) {
@@ -73,7 +80,7 @@ export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
 
   return (
     <form className={`enquiry-form ${variant}`} onSubmit={handleSubmit} noValidate>
-      {variant === 'inline' ? <p className="form-note">Frontend prototype only. This enquiry is not sent to the school.</p> : null}
+      <p className="form-note">Prototype only: your details are not saved or sent. Please do not include sensitive information.</p>
       <div className="input-group">
         <label htmlFor={`${idPrefix}-name`}>Parent/guardian name <span className="required-indicator">Required</span></label>
         <input
@@ -88,6 +95,22 @@ export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
           aria-describedby={errors.name ? `${idPrefix}-name-error` : undefined}
         />
         {errors.name ? <span id={`${idPrefix}-name-error`} className="field-error">{errors.name}</span> : null}
+      </div>
+
+      <div className="input-group">
+        <label htmlFor={`${idPrefix}-email`}>Email (optional)</label>
+        <input
+          id={`${idPrefix}-email`}
+          type="email"
+          name="email"
+          autoComplete="email"
+          value={formData.email}
+          onChange={(event) => handleChange('email', event.target.value)}
+          placeholder="name@example.com"
+          aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? `${idPrefix}-email-error` : undefined}
+        />
+        {errors.email ? <span id={`${idPrefix}-email-error`} className="field-error">{errors.email}</span> : null}
       </div>
 
       <div className="input-group">
@@ -127,11 +150,49 @@ export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
         {errors.classLevel ? <span id={`${idPrefix}-class-error`} className="field-error">{errors.classLevel}</span> : null}
       </div>
 
+      <div className="input-group">
+        <label htmlFor={`${idPrefix}-city`}>City (optional)</label>
+        <input
+          id={`${idPrefix}-city`}
+          type="text"
+          name="city"
+          autoComplete="address-level2"
+          value={formData.city}
+          onChange={(event) => handleChange('city', event.target.value)}
+          placeholder="Enter city"
+        />
+      </div>
+
+      <div className="input-group">
+        <label htmlFor={`${idPrefix}-contact-preference`}>Preferred contact method</label>
+        <select
+          id={`${idPrefix}-contact-preference`}
+          name="contactPreference"
+          value={formData.contactPreference}
+          onChange={(event) => handleChange('contactPreference', event.target.value)}
+        >
+          <option>Phone</option>
+          <option>Email</option>
+        </select>
+      </div>
+
+      <div className="input-group">
+        <label htmlFor={`${idPrefix}-message`}>What would you like to ask? (optional)</label>
+        <textarea
+          id={`${idPrefix}-message`}
+          name="message"
+          rows={3}
+          maxLength={1000}
+          value={formData.message}
+          onChange={(event) => handleChange('message', event.target.value)}
+        />
+      </div>
+
       <button type="submit" className="primary-button">Submit enquiry</button>
 
       {isSuccess ? (
         <p className="success-message" role="status" aria-live="polite">
-          This prototype has not sent your enquiry. A live admissions connection is not yet available.
+          Your enquiry was checked in this browser only. It has not been saved or sent; a live admissions connection is not available.
         </p>
       ) : null}
     </form>
