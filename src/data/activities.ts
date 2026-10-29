@@ -1,4 +1,4 @@
-export type ActivityBand = 'primary' | 'middle' | 'secondary' | 'senior-secondary'
+export type ActivityBand = 'primary' | 'middle'
 
 export type EnrichmentActivity = {
   id: string
@@ -15,15 +15,13 @@ export type EnrichmentActivity = {
 export const activityBands: { id: ActivityBand; label: string }[] = [
   { id: 'primary', label: 'Primary · Classes 1–5' },
   { id: 'middle', label: 'Middle · Classes 6–8' },
-  { id: 'secondary', label: 'Secondary · Classes 9–10' },
-  { id: 'senior-secondary', label: 'Senior Secondary · Classes 11–12' },
 ]
 
 export const enrichmentActivities: EnrichmentActivity[] = [
   {
     id: 'creative-arts',
     title: 'Colour, shape & story',
-    category: 'Creative arts',
+    category: 'Art & design',
     bands: ['primary', 'middle'],
     format: 'Individual making with a short share-back',
     duration: '30–45 minutes · illustrative',
@@ -34,7 +32,7 @@ export const enrichmentActivities: EnrichmentActivity[] = [
   {
     id: 'music-rhythm',
     title: 'Rhythm & listening circle',
-    category: 'Music',
+    category: 'Art & design',
     bands: ['primary', 'middle'],
     format: 'Small-group rhythm and listening exercise',
     duration: '20–35 minutes · illustrative',
@@ -46,7 +44,7 @@ export const enrichmentActivities: EnrichmentActivity[] = [
     id: 'movement-games',
     title: 'Movement & teamwork games',
     category: 'Movement & sports',
-    bands: ['primary', 'middle', 'secondary'],
+    bands: ['primary', 'middle'],
     format: 'Facilitated, low-contact group activity',
     duration: '25–40 minutes · illustrative',
     materials: 'Clear open space and optional soft markers such as cones or floor spots.',
@@ -56,7 +54,7 @@ export const enrichmentActivities: EnrichmentActivity[] = [
   {
     id: 'reading-circle',
     title: 'Read, wonder & retell',
-    category: 'Reading',
+    category: 'Reading & communication',
     bands: ['primary', 'middle'],
     format: 'Read-aloud, paired reading, or quiet independent reading',
     duration: '20–35 minutes · illustrative',
@@ -67,8 +65,8 @@ export const enrichmentActivities: EnrichmentActivity[] = [
   {
     id: 'debate-circle',
     title: 'Make a case, hear another view',
-    category: 'Debate & public speaking',
-    bands: ['middle', 'secondary', 'senior-secondary'],
+    category: 'Reading & communication',
+    bands: ['primary', 'middle'],
     format: 'Small-group structured discussion',
     duration: '30–45 minutes · illustrative',
     materials: 'A neutral prompt and paper for planning ideas.',
@@ -78,8 +76,8 @@ export const enrichmentActivities: EnrichmentActivity[] = [
   {
     id: 'stem-challenge',
     title: 'Build, test & improve',
-    category: 'STEM',
-    bands: ['primary', 'middle', 'secondary'],
+    category: 'STEM & making',
+    bands: ['primary', 'middle'],
     format: 'Small-group design challenge',
     duration: '35–50 minutes · illustrative',
     materials: 'Paper, reusable card, tape, and other simple non-powered classroom materials.',
@@ -89,8 +87,8 @@ export const enrichmentActivities: EnrichmentActivity[] = [
   {
     id: 'wellbeing-journal',
     title: 'Pause, notice & reflect',
-    category: 'Wellbeing',
-    bands: ['primary', 'middle', 'secondary', 'senior-secondary'],
+    category: 'Wellbeing & life skills',
+    bands: ['primary', 'middle'],
     format: 'Quiet individual reflection with an optional group check-in',
     duration: '10–20 minutes · illustrative',
     materials: 'Paper or a personal notebook; sharing is optional.',
@@ -100,8 +98,8 @@ export const enrichmentActivities: EnrichmentActivity[] = [
   {
     id: 'digital-citizenship',
     title: 'Think before you share',
-    category: 'Digital citizenship',
-    bands: ['middle', 'secondary', 'senior-secondary'],
+    category: 'Digital citizenship & AI awareness',
+    bands: ['primary', 'middle'],
     format: 'Facilitated scenario discussion; no device required',
     duration: '25–40 minutes · illustrative',
     materials: 'Fictional scenarios and a board or paper for group notes.',
@@ -112,7 +110,7 @@ export const enrichmentActivities: EnrichmentActivity[] = [
     id: 'financial-literacy',
     title: 'Plan a pretend project budget',
     category: 'Financial literacy',
-    bands: ['middle', 'secondary', 'senior-secondary'],
+    bands: ['primary', 'middle'],
     format: 'Paired or small-group planning exercise using fictional amounts',
     duration: '30–45 minutes · illustrative',
     materials: 'A fictional project brief, paper, and pencils or a basic calculator.',
@@ -123,12 +121,34 @@ export const enrichmentActivities: EnrichmentActivity[] = [
     id: 'career-exploration',
     title: 'Interests, skills & future questions',
     category: 'Career exploration',
-    bands: ['secondary', 'senior-secondary'],
-    format: 'Guided research or reflection with an optional discussion',
+    bands: ['middle'],
+    format: 'Guided reflection on interests and community roles; online research is not required',
     duration: '30–45 minutes · illustrative',
     materials: 'A reflection sheet and, only if available and supervised, approved public career information.',
     learningOutcomes: ['Connect interests with possible fields to explore', 'Generate questions about a role or learning path', 'Identify a next step for further research'],
-    safety: 'Present careers without stereotyping or promising outcomes. Do not collect sensitive personal information; use only approved, age-appropriate online resources.',
+    safety: 'Use age-appropriate, non-stereotyped examples. Do not promise outcomes, collect sensitive personal information, or require online research.',
+  },
+  {
+    id: 'young-enterprise',
+    title: 'A helpful idea for a shared need',
+    category: 'Entrepreneurship',
+    bands: ['primary', 'middle'],
+    format: 'Small-group idea sketch using a fictional classroom or community prompt',
+    duration: '25–40 minutes · illustrative',
+    materials: 'Paper and pencils; no purchase, sale, or fundraising is involved.',
+    learningOutcomes: ['Notice a simple need in a fictional scenario', 'Suggest a helpful idea', 'Explain who the idea might support'],
+    safety: 'Keep scenarios fictional and inclusive. Do not collect money, sell goods, ask learners to contact strangers, or make promises about real ventures.',
+  },
+  {
+    id: 'community-care',
+    title: 'Notice and care for a shared place',
+    category: 'Environment & community',
+    bands: ['primary', 'middle'],
+    format: 'Photo-free observation, drawing, or fictional planning activity',
+    duration: '20–35 minutes · illustrative',
+    materials: 'Paper and pencils; an outdoor visit is not required.',
+    learningOutcomes: ['Notice one feature of a shared environment', 'Suggest a small, safe way to care for it', 'Listen to different community perspectives'],
+    safety: 'This idea can be completed indoors. Any real-world activity requires permission, risk assessment, adult supervision, privacy-aware documentation, and school approval.',
   },
 ]
 
@@ -136,7 +156,7 @@ export const activityCalendar = [
   { month: 'Month 1', idea: 'Creative arts and reading', note: 'Example only; not a published calendar.' },
   { month: 'Month 2', idea: 'STEM and movement', note: 'Example only; not a published calendar.' },
   { month: 'Month 3', idea: 'Music and wellbeing', note: 'Example only; not a published calendar.' },
-  { month: 'Month 4', idea: 'Digital citizenship and speaking', note: 'Example only; not a published calendar.' },
+  { month: 'Month 4', idea: 'Digital citizenship and community care', note: 'Example only; not a published calendar.' },
 ]
 
 export const activityFaqs = [

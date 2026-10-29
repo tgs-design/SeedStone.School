@@ -8,7 +8,7 @@ export default function Footer() {
           <Link to="/" className="brand footer-brand" aria-label="Seedstone School home">
             <img src="/seedstone-logo.svg" alt="Seedstone School" className="brand-logo footer-logo" />
           </Link>
-          <p className="footer-copy">A next-generation online school helping every child learn, grow, and discover their own potential.</p>
+          <p className="footer-copy">Powered by PhysicsWallah. A thoughtful learning experience with a current focus on Classes 1–8.</p>
         </div>
 
         <div>

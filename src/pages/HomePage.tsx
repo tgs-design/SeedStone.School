@@ -32,9 +32,9 @@ export default function HomePage() {
       <section className="hero-section">
         <div className="container hero-grid">
           <div className="hero-copy">
-            <p className="kicker">A NEXT-GEN ONLINE GLOBAL SCHOOL</p>
+            <p className="kicker">CURRENT FOCUS · CLASSES 1–8</p>
             <h1>We're Reimagining What School Can Be.</h1>
-            <p className="lead">A school that gives every child room to discover their own way of learning.</p>
+            <p className="lead">A school that gives every child room to discover their own way of learning, with a current focus on Classes 1–8.</p>
             <div className="button-row">
               <a className="primary-button" href="#learning-works">Explore Learning <ArrowDownRight size={17} /></a>
               <button type="button" className="secondary-button" onClick={() => window.dispatchEvent(new CustomEvent('open-enquiry'))}>Inquire Now</button>
@@ -77,14 +77,14 @@ export default function HomePage() {
 
       <section className="page-section class-groups-section">
         <div className="container">
-          <SectionHeading eyebrow="Classes and academic pathways" title="Explore the class groups" description="Class groups are shown for orientation. Subject, programme, and admissions availability for each class are awaiting confirmation." />
+          <SectionHeading eyebrow="Current class focus" title="Classes 1–8, across two learning stages" description="Seedstone is currently focused on Primary (Classes 1–5) and Middle (Classes 6–8). Subject details and class-specific admission availability are still being confirmed." />
           <div className="class-pathway-grid">
             {primaryClassBands.map((band) => (
               <Link className="class-pathway-card" to={`/curriculum#${band.id}`} key={band.id}>
                 <span className="class-pathway-range">{band.classes}</span>
                 <h3>{band.title}</h3>
                 <p>{band.description}</p>
-                <span className="status-label">Availability: awaiting confirmation</span>
+                <span className="status-label">Current focus · details in development</span>
                 <span className="inline-link">Explore classes <ArrowRight size={16} /></span>
               </Link>
             ))}

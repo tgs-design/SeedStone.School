@@ -1,4 +1,4 @@
-import { ArrowRight, Brush, Filter, Music2, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, BookOpen, Brush, Filter, ShieldCheck, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Accordion from '../components/Accordion'
@@ -6,8 +6,9 @@ import SectionHeading from '../components/SectionHeading'
 import { activityBands, activityCalendar, activityFaqs, enrichmentActivities } from '../data/activities'
 
 const categoryIcons: Record<string, typeof Sparkles> = {
-  'Creative arts': Brush,
-  Music: Music2,
+  'Art & design': Brush,
+  'STEM & making': Sparkles,
+  'Reading & communication': BookOpen,
 }
 
 export default function ActivitiesPage() {
@@ -26,7 +27,7 @@ export default function ActivitiesPage() {
         <div className="container narrow-section">
           <p className="kicker">Beyond academics</p>
           <h1>Make room for interests, ideas, and shared experiences.</h1>
-          <p>Explore illustrative activity ideas across creative, practical, and personal-development themes. Nothing on this page is a confirmed club, class, schedule, or school service.</p>
+          <p>Explore illustrative activity ideas for Seedstone’s current Classes 1–8 focus across creative, practical, and personal-development themes. Nothing on this page is a confirmed club, class, schedule, or school service.</p>
           <a className="inline-link" href="#activity-explorer">Explore activity ideas <ArrowRight size={16} aria-hidden="true" /></a>
         </div>
       </section>
@@ -129,7 +130,7 @@ export default function ActivitiesPage() {
       <section className="page-section">
         <div className="container two-column activity-curriculum-link">
           <SectionHeading eyebrow="Academic learning" title="Looking for class-wise curriculum references?" />
-          <p>Explore the four pathway comparison and proposed stage guide. Subject lists, affiliations, exam centres, and qualification routes are not confirmed.<br /><Link to="/curriculum" className="inline-link">Explore curriculum references <ArrowRight size={16} aria-hidden="true" /></Link></p>
+          <p>Explore the current Primary (Classes 1–5) and Middle (Classes 6–8) focus, class-wise status, and broad educational references. Specific subjects and syllabi await confirmation.<br /><Link to="/curriculum" className="inline-link">Explore Classes 1–8 curriculum <ArrowRight size={16} aria-hidden="true" /></Link></p>
         </div>
       </section>
     </>

@@ -8,6 +8,7 @@ export default function AboutPage() {
         <div className="container narrow-section">
           <p className="kicker">About Seedstone School</p>
           <h1>Making space for a more thoughtful learning experience.</h1>
+          <p>Seedstone’s current focus is Classes 1–8: Primary (Classes 1–5) and Middle (Classes 6–8).</p>
         </div>
       </section>
 
@@ -17,7 +18,7 @@ export default function AboutPage() {
             <SectionHeading eyebrow="The Seedstone idea" title="School can make room for more than one way to learn." />
           </div>
           <div>
-            <p>Seedstone School is being developed around an educational vision that gives children room to understand ideas, explore their interests, and consider who they want to become. The curriculum, programme availability, and delivery model are still being confirmed.</p>
+            <p>Seedstone School is being developed around an educational vision that gives children room to understand ideas, explore their interests, and consider who they want to become. The current focus is Classes 1–8. Class-wise curriculum, teaching model, and admission availability are still being confirmed.</p>
           </div>
         </div>
       </section>
@@ -48,7 +49,7 @@ export default function AboutPage() {
       <section className="page-section">
         <div className="container two-column">
           <SectionHeading eyebrow="The school today" title="Key details are still being confirmed." />
-          <p>Educator and leadership profiles, curriculum details, programme availability, admissions information, and contact details will be shared when approved.</p>
+          <p>Educator and leadership profiles, class-wise curriculum details, admissions information, and contact details will be shared when approved. No board affiliation or examination arrangement is claimed.</p>
         </div>
       </section>
 

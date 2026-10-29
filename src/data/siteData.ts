@@ -14,20 +14,18 @@ export const navItems: NavItem[] = [
 ]
 
 export const primaryClassBands = [
-  { id: 'primary', title: 'Primary', classes: 'Classes 1–5', description: 'An opportunity to build foundations through questions, practice, and exploration.' },
-  { id: 'middle', title: 'Middle', classes: 'Classes 6–8', description: 'An opportunity to connect ideas and develop independent learning habits.' },
-  { id: 'secondary', title: 'Secondary', classes: 'Classes 9–10', description: 'An opportunity to deepen understanding and practise applying ideas.' },
-  { id: 'senior-secondary', title: 'Senior Secondary', classes: 'Classes 11–12', description: 'An opportunity to explore subjects in greater depth and consider next steps.' },
+  { id: 'primary', title: 'Primary learning', classes: 'Classes 1–5', description: 'Build foundations through questions, practice, creativity, and exploration.' },
+  { id: 'middle', title: 'Middle-school learning', classes: 'Classes 6–8', description: 'Connect ideas, develop subject understanding, and practise independent learning.' },
 ]
 
 const classStages = [
   { range: [1, 5], band: 'Primary', anchor: 'primary' },
   { range: [6, 8], band: 'Middle', anchor: 'middle' },
-  { range: [9, 10], band: 'Secondary', anchor: 'secondary' },
-  { range: [11, 12], band: 'Senior Secondary', anchor: 'senior-secondary' },
 ] as const
 
-export const curriculumClasses = Array.from({ length: 12 }, (_, index) => {
+export const activeClassOptions = Array.from({ length: 8 }, (_, index) => `Class ${index + 1}`)
+
+export const curriculumClasses = Array.from({ length: 8 }, (_, index) => {
   const classNumber = index + 1
   const stage = classStages.find(({ range }) => classNumber >= range[0] && classNumber <= range[1])
 
@@ -36,7 +34,7 @@ export const curriculumClasses = Array.from({ length: 12 }, (_, index) => {
     label: `Class ${classNumber}`,
     band: stage?.band ?? 'Class group',
     bandId: stage?.anchor ?? 'primary',
-    overview: `The proposed learning experience for Class ${classNumber} is awaiting academic review and confirmation.`,
+    overview: `Class ${classNumber} is within Seedstone’s current Classes 1–8 focus. Class-specific curriculum detail is awaiting academic confirmation.`,
   }
 })
 
@@ -57,13 +55,13 @@ export const learningExperienceThemes = [
     title: 'Projects and real-world skills',
     status: 'Awaiting confirmation',
     description: 'Potential enrichment areas to explore; none are confirmed as active programmes.',
-    examples: ['STEM and project-based learning', 'Financial literacy', 'Entrepreneurship', 'Competitive-exam preparation'],
+    examples: ['STEM and project-based learning', 'Financial literacy', 'Entrepreneurship', 'Environment and community'],
   },
   {
-    title: 'Wellbeing and future readiness',
+    title: 'Wellbeing and digital citizenship',
     status: 'Awaiting confirmation',
-    description: 'Proposed themes for future consideration, subject to staffing and programme approval.',
-    examples: ['Digital citizenship and responsible AI', 'Student wellbeing and mentorship', 'Career exploration', 'Collaboration and student portfolios'],
+    description: 'Proposed Classes 1–8 themes, subject to academic and programme approval.',
+    examples: ['Digital citizenship and age-appropriate AI awareness', 'Wellbeing and life skills', 'Interests and future questions', 'Collaboration and reflection'],
   },
 ]
 
@@ -85,7 +83,7 @@ export const beyondTextbookAreas = [
   { title: 'STEM and Projects', description: 'A possible area for hands-on exploration, curiosity, and problem solving.' },
   { title: 'Financial Literacy', description: 'Potential life-skills content; specific topics are pending confirmation.' },
   { title: 'Entrepreneurship', description: 'A possible lens for exploring creativity and responsible problem solving.' },
-  { title: 'Exam Preparation', description: 'Potential concept-focused support; exam routes and availability are pending confirmation.' },
+  { title: 'Environment and Community', description: 'A possible lens for noticing local needs and caring for shared spaces.' },
 ]
 
 export const valueThemes = [
@@ -142,12 +140,16 @@ export const blogPosts = [
 
 export const faqs = [
   {
+    question: 'Which classes are Seedstone currently focused on?',
+    answer: 'Seedstone’s current focus is Classes 1–8, grouped into Primary (Classes 1–5) and Middle (Classes 6–8). Class-wise programme and admission details are still being confirmed.',
+  },
+  {
     question: 'What is the Seedstone approach to learning?',
     answer: 'Seedstone is being shaped around understanding, practising and applying ideas, exploring interests, and reflecting on learning. The specific curriculum and programme are still being confirmed.',
   },
   {
     question: 'Which curriculum, board, or qualification routes are available?',
-    answer: 'Subjects, board affiliations, and qualification routes have not been confirmed. The enquiry form can help you prepare a question, but it does not send information to the school.',
+    answer: 'Seedstone’s current focus is Classes 1–8. Class-wise subjects, board affiliation, assessment, and examination arrangements have not been confirmed. The enquiry form does not send information to the school.',
   },
   {
     question: 'How do I learn whether Seedstone could suit my child?',
@@ -155,7 +157,7 @@ export const faqs = [
   },
   {
     question: 'What ages or class levels are currently available?',
-    answer: 'The class groups shown on the curriculum page are illustrative. Programme availability and eligibility are pending confirmation.',
+    answer: 'The current Seedstone focus is Classes 1–8. Eligibility and class-specific admission availability are pending confirmation.',
   },
   {
     question: 'Where can I find fees and admissions dates?',
@@ -195,15 +197,5 @@ export const curriculumAccordionStatic = {
     subjects: 'Pending confirmation.',
     approach: 'Proposed emphasis on connecting concepts and practising problem solving.',
     outcomes: 'Illustrative focus: subject connections and growing independence.',
-  },
-  'Classes 9–10': {
-    subjects: 'Pending confirmation.',
-    approach: 'Possible emphasis on concept-building and reviewing ideas over time.',
-    outcomes: 'Illustrative focus: subject understanding and reflective practice. Exam routes are unconfirmed.',
-  },
-  'Classes 11–12': {
-    subjects: 'Pending confirmation.',
-    approach: 'Possible emphasis on sustained exploration and meaningful application.',
-    outcomes: 'Illustrative focus: deeper subject questions and next-step exploration. Pathways are unconfirmed.',
   },
 }

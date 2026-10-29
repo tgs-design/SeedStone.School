@@ -79,9 +79,10 @@ button {
 }
 
 .brand-logo {
+  display: block;
   height: 42px;
   width: auto;
-  display: block;
+  object-fit: contain;
 }
 
 .footer-logo {
@@ -929,6 +930,14 @@ main {
   font-weight: 600;
 }
 
+.prototype-status {
+  padding: 10px 12px;
+  border-left: 3px solid var(--teal);
+  background: #f3f6f5;
+  color: var(--navy);
+  font-size: 0.9rem;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1716,8 +1725,10 @@ main {
 }
 
 .portal-brand img {
+  display: block;
   width: auto;
   height: 42px;
+  object-fit: contain;
 }
 
 .portal-brand span {
@@ -3469,13 +3480,6 @@ main {
   margin-top: 16px;
 }
 
-.pathway-card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.pathway-reference-card,
 .selected-stage-panel,
 .activity-idea-card {
   padding: clamp(20px, 3vw, 28px);
@@ -3485,7 +3489,6 @@ main {
   box-shadow: var(--shadow-soft);
 }
 
-.pathway-card-title,
 .selected-stage-heading,
 .activity-card-topline {
   display: flex;
@@ -3494,7 +3497,6 @@ main {
   gap: 14px;
 }
 
-.pathway-reference-card h3,
 .selected-stage-heading h3,
 .activity-idea-card h3 {
   margin: 18px 0 10px;
@@ -3504,7 +3506,6 @@ main {
   line-height: 1.2;
 }
 
-.pathway-reference-card dl,
 .stage-details,
 .activity-meta {
   display: grid;
@@ -3512,7 +3513,6 @@ main {
   margin: 18px 0;
 }
 
-.pathway-reference-card dl > div,
 .stage-details > div,
 .activity-meta > div {
   display: grid;
@@ -3521,7 +3521,6 @@ main {
   border-top: 1px solid rgba(12, 50, 73, 0.09);
 }
 
-.pathway-reference-card dt,
 .stage-details dt,
 .activity-meta dt {
   color: var(--navy);
@@ -3529,115 +3528,14 @@ main {
   font-weight: 750;
 }
 
-.pathway-reference-card dd,
 .stage-details dd,
 .activity-meta dd {
   margin: 0;
   color: var(--muted);
 }
 
-.pathway-reference-card > p {
-  color: var(--muted);
-}
-
-.pathway-overview {
-  padding: 14px;
-  border-radius: 10px;
-  background: #f3f6f5;
-}
-
-.pathway-school-status {
-  padding: 12px;
-  border-left: 3px solid var(--red);
-  background: rgba(193, 23, 32, 0.045);
-  font-size: 0.9rem;
-  font-weight: 650;
-}
-
-.official-sources {
-  padding-top: 12px;
-  border-top: 1px solid rgba(12, 50, 73, 0.1);
-}
-
-.official-sources summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--navy);
-  font-weight: 700;
-  cursor: pointer;
-  list-style: none;
-}
-
-.official-sources summary::-webkit-details-marker {
-  display: none;
-}
-
-.official-sources ul {
-  display: grid;
-  gap: 9px;
-  padding: 14px 0 0;
-  margin: 0;
-  list-style: none;
-}
-
-.official-sources a {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  color: var(--teal);
-  font-size: 0.9rem;
-  font-weight: 650;
-}
-
-.official-sources a:hover,
 .curriculum-class-content a:hover {
   color: var(--red);
-}
-
-.curriculum-table-wrap {
-  margin-top: 28px;
-  overflow-x: auto;
-  border: 1px solid rgba(12, 50, 73, 0.13);
-  border-radius: 14px;
-  background: var(--white);
-}
-
-.pathway-comparison-table {
-  width: 100%;
-  min-width: 980px;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.pathway-comparison-table caption {
-  padding: 16px 18px;
-  color: var(--muted);
-  text-align: left;
-}
-
-.pathway-comparison-table th,
-.pathway-comparison-table td {
-  min-width: 180px;
-  padding: 15px;
-  border-top: 1px solid rgba(12, 50, 73, 0.1);
-  vertical-align: top;
-}
-
-.pathway-comparison-table thead th {
-  color: var(--navy);
-  background: #f3f6f5;
-}
-
-.pathway-comparison-table tbody th {
-  color: var(--navy);
-  background: rgba(243, 246, 245, 0.55);
-}
-
-.pathway-comparison-table td {
-  color: var(--muted);
-  font-size: 0.88rem;
 }
 
 .research-note {
@@ -3647,14 +3545,47 @@ main {
   font-size: 0.86rem;
 }
 
-.research-note code {
+.curriculum-references > div > p {
+  max-width: 70ch;
+  color: var(--muted);
+}
+
+.curriculum-reference-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.curriculum-reference-list li {
+  padding: 16px;
+  border: 1px solid rgba(12, 50, 73, 0.1);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.curriculum-reference-list a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
   color: var(--navy);
-  overflow-wrap: anywhere;
+  font-weight: 750;
+}
+
+.curriculum-reference-list a:hover {
+  color: var(--red);
+}
+
+.curriculum-reference-list p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .stage-selector {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 18px;
 }
@@ -3949,14 +3880,12 @@ main {
 }
 
 @media (max-width: 640px) {
-  .pathway-card-grid,
   .stage-selector,
   .activity-card-grid,
   .activity-calendar {
     grid-template-columns: 1fr;
   }
 
-  .pathway-card-title,
   .selected-stage-heading {
     align-items: flex-start;
     flex-direction: column;

@@ -27,11 +27,11 @@ export default function Layout() {
     } as Record<string, string>)[location.pathname] ?? 'Page not found'
     const title = article ? `${article.title} | Seedstone School` : `${page} | Seedstone School`
     const descriptions: Record<string, string> = {
-      '/': 'Explore Seedstone School’s proposed learning approach, class groups, curriculum references, and learning experience.',
-      '/about': 'Learn about Seedstone School’s proposed learning philosophy and the details that remain subject to confirmation.',
-      '/learning-experience': 'Explore Seedstone School’s proposed learning cycle, learning themes, and browser-only portal demonstration.',
-      '/curriculum': 'Compare official curriculum pathway references and explore proposed class-stage guidance. Seedstone pathway availability is unconfirmed.',
-      '/activities': 'Explore illustrative beyond-academics activity ideas by category and class group. No activities are confirmed as currently offered.',
+      '/': 'Explore Seedstone School’s current focus on Classes 1–8, its proposed learning approach, and class groups.',
+      '/about': 'Learn about Seedstone School’s current Classes 1–8 focus, proposed learning philosophy, and details still subject to confirmation.',
+      '/learning-experience': 'Explore Seedstone School’s proposed learning cycle for its current Classes 1–8 focus and browser-only portal demonstration.',
+      '/curriculum': 'Explore Seedstone School’s current Classes 1–8 focus, Primary and Middle stages, and class-wise curriculum status.',
+      '/activities': 'Explore illustrative beyond-academics activity ideas for Classes 1–8. No activities are confirmed as currently delivered.',
       '/blogs': 'Browse Seedstone School’s sample draft articles for families and learners.',
       '/contact': 'Prepare an enquiry about Seedstone School. This frontend prototype does not save or send form submissions.',
       '/login': 'Explore the fictional, browser-only Seedstone School role-based portal demo.',

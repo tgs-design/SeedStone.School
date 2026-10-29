@@ -17,7 +17,7 @@ export default function LearningExperiencePage() {
         <div className="container narrow-section">
           <p className="kicker">Learning experience</p>
           <h1>Learning is more than completing a lesson.</h1>
-          <p>Seedstone’s proposed experience is being shaped around understanding, purposeful practice, exploration, and reflection. Specific services and programmes remain subject to confirmation.</p>
+          <p>Seedstone’s current focus is Classes 1–8. The proposed experience is being shaped around understanding, purposeful practice, exploration, and reflection; specific services and class-wise programmes remain subject to confirmation.</p>
         </div>
       </section>
 
@@ -39,7 +39,7 @@ export default function LearningExperiencePage() {
 
       <section className="page-section">
         <div className="container">
-          <SectionHeading eyebrow="Course catalogue" title="Academic learning and enrichment are different things" description="The catalogue below groups proposed learning themes. These labels do not imply that a course, tool, staff role, or partnership is currently available." />
+          <SectionHeading eyebrow="Classes 1–8 learning themes" title="Academic learning and enrichment are different things" description="The catalogue below groups proposed learning themes for the current Classes 1–8 focus. These labels do not imply that a course, tool, staff role, or partnership is currently available." />
           <div className="experience-catalogue">
             {learningExperienceThemes.map((theme, index) => (
               <article className="experience-theme-card" key={theme.title}>

@@ -22,7 +22,7 @@ const initialUsers: DemoUser[] = [
 const initialEnquiries: DemoEnquiry[] = [
   { id: 'enquiry-1', family: 'Demo family A', classGroup: 'Classes 6–8', topic: 'Learning approach', status: 'New', note: '', followUp: '' },
   { id: 'enquiry-2', family: 'Demo family B', classGroup: 'Classes 1–5', topic: 'Programme details', status: 'Contacted', note: 'Sample note only.', followUp: '' },
-  { id: 'enquiry-3', family: 'Demo family C', classGroup: 'Classes 9–10', topic: 'Class availability', status: 'Follow-up', note: '', followUp: '' },
+  { id: 'enquiry-3', family: 'Demo family C', classGroup: 'Classes 6–8', topic: 'Learning approach', status: 'Follow-up', note: '', followUp: '' },
 ]
 
 function createInitialState(): DemoState {
