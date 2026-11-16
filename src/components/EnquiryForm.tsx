@@ -2,10 +2,6 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { activeClassOptions } from '../data/siteData'
 
-type EnquiryFormProps = {
-  variant?: 'modal' | 'inline'
-}
-
 type FormState = {
   classLevel: string
   topic: string
@@ -15,10 +11,10 @@ type FormState = {
 type FormErrors = Partial<Record<keyof FormState, string>>
 
 const initialValues: FormState = { classLevel: '', topic: '', message: '' }
-const enquiryTopics = ['Curriculum and learning', 'Activities and enrichment', 'Admissions and eligibility', 'Other question']
+const enquiryTopics = ['Classes and academic focus', 'Learning approach', 'Admissions information', 'Other question']
 
-export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
-  const idPrefix = variant === 'modal' ? 'enquiry-modal' : 'enquiry-inline'
+export default function EnquiryForm() {
+  const idPrefix = 'enquiry'
   const [formData, setFormData] = useState<FormState>(initialValues)
   const [errors, setErrors] = useState<FormErrors>({})
   const [validated, setValidated] = useState(false)
@@ -39,7 +35,7 @@ export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
   }
 
   return (
-    <form className={`enquiry-form ${variant}`} onSubmit={handleSubmit} noValidate>
+    <form className="enquiry-form inline" onSubmit={handleSubmit} noValidate>
       <p className="form-note">Prototype only: nothing is saved or sent. Do not enter a child’s name, contact details, health information, or other identifying details.</p>
       <div className="input-group">
         <label htmlFor={`${idPrefix}-class`}>Class area for your question <span className="required-indicator">Required</span></label>
@@ -90,7 +86,7 @@ export default function EnquiryForm({ variant = 'modal' }: EnquiryFormProps) {
       </div>
 
       <button type="submit" className="primary-button">Check this question</button>
-      {validated ? <p className="prototype-status" role="status" aria-live="polite">The form is valid in this browser only. No enquiry was created or sent.</p> : null}
+      {validated ? <p className="prototype-status" role="status" aria-live="polite">Your question is ready to review, but it has not been sent or saved.</p> : null}
     </form>
   )
 }

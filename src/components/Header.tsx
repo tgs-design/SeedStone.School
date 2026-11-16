@@ -3,11 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { navItems } from '../data/siteData'
 
-type HeaderProps = {
-  onOpenEnquiry: () => void
-}
-
-export default function Header({ onOpenEnquiry }: HeaderProps) {
+export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
@@ -32,15 +28,10 @@ export default function Header({ onOpenEnquiry }: HeaderProps) {
               {item.label}
             </NavLink>
           ))}
-          <div className="mobile-nav-actions">
-            <Link to="/login" className="secondary-button" onClick={() => setMobileOpen(false)}>Login</Link>
-            <button type="button" className="primary-button" onClick={() => { setMobileOpen(false); onOpenEnquiry() }}>Inquire Now</button>
-          </div>
         </nav>
 
         <div className="header-actions">
-          <Link to="/login" className="login-link" onClick={() => setMobileOpen(false)}>Login</Link>
-          <button type="button" className="primary-button compact-button" onClick={onOpenEnquiry}>Inquire Now</button>
+          <Link to="/contact" className="primary-button compact-button">Enquire Now</Link>
           <button type="button" className="menu-toggle" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} aria-controls="main-navigation" onClick={() => setMobileOpen((open) => !open)}>
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
