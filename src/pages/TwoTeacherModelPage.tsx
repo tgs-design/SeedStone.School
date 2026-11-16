@@ -1,5 +1,4 @@
-import { ArrowRight, BookOpen, Users } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { BookOpen, Users } from 'lucide-react'
 import SectionHeading from '../components/SectionHeading'
 
 const teacherRoles = [
@@ -56,16 +55,6 @@ export default function TwoTeacherModelPage() {
             <div className="feature-chip"><Users size={18} aria-hidden="true" />More guided student support</div>
             <div className="feature-chip"><BookOpen size={18} aria-hidden="true" />Improved practice and follow-up</div>
           </div>
-        </div>
-      </section>
-
-      <section className="page-section final-cta-section small-cta">
-        <div className="container final-cta-box">
-          <div>
-            <p className="kicker">Explore the learning journey</p>
-            <h2>Understand how Seedstone may support daily learning.</h2>
-          </div>
-          <Link to="/learning-experience" className="primary-button">Explore learning <ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </section>
     </>

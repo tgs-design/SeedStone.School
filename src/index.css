@@ -12,10 +12,18 @@
   --font-body: 'Inter Tight', sans-serif;
   --shadow-soft: 0 12px 30px rgba(12, 50, 73, 0.08);
   --radius: 22px;
+  --page-gutter: clamp(16px, 4vw, 48px);
+  --content-width: 1160px;
+  --section-space: clamp(42px, 5vw, 64px);
+  --grid-gap: clamp(16px, 2.4vw, 28px);
+  --type-page-title: clamp(2.15rem, 3.8vw, 3.45rem);
+  --type-section-title: clamp(1.9rem, 3vw, 2.65rem);
+  --type-body: 1rem;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 84px;
 }
 
 body {

@@ -4,10 +4,9 @@ export type NavItem = {
 }
 
 export const navItems: NavItem[] = [
-  { label: 'Home', path: '/' },
-  { label: 'About', path: '/about' },
-  { label: 'Learning Experience', path: '/learning-experience' },
-  { label: 'Contact', path: '/contact' },
+  { label: 'About', path: '#about' },
+  { label: 'Learning', path: '#learning-approach' },
+  { label: 'Classes 1–8', path: '#academic-journey' },
 ]
 
 export const primaryClassBands = [

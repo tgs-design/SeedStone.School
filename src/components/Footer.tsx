@@ -1,28 +1,29 @@
-import { Link } from 'react-router-dom'
+import { navItems } from '../data/siteData'
 
 export default function Footer() {
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <Link to="/" className="brand footer-brand" aria-label="Seedstone School home">
+          <a href="#home" className="brand footer-brand" aria-label="Seedstone School home">
             <img src="/seedstone-logo.svg" alt="Seedstone School" className="brand-logo footer-logo" />
-          </Link>
-          <p className="footer-copy">Seedstone School, in association with PhysicsWallah. Current focus: Classes 1–8.</p>
+          </a>
+          <p className="footer-copy">A Next-Gen Online Global School for Classes 1–8, in association with PhysicsWallah.</p>
         </div>
 
         <div>
-          <h3>Explore</h3>
+          <h3>On this page</h3>
           <ul className="footer-links">
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/learning-experience">Learning Experience</Link></li>
+            {navItems.map((item) => (
+              <li key={item.path}><a href={item.path}>{item.label}</a></li>
+            ))}
           </ul>
         </div>
 
         <div>
           <h3>Admissions</h3>
           <ul className="footer-links">
-            <li><Link to="/contact">Enquire Now</Link></li>
+            <li><a href="#enquiry">Enquire Now</a></li>
           </ul>
         </div>
       </div>

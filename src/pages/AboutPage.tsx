@@ -17,7 +17,6 @@ export default function AboutPage() {
           <p className="kicker">Our vision</p>
           <h2>Make room for curiosity, understanding, and individual growth.</h2>
           <p>Seedstone’s educational philosophy is centred on exploring ideas, building understanding, practising, and reflecting. The current public focus is Primary and Middle learning for Classes 1–8.</p>
-          <Link to="/learning-experience" className="inline-link">Explore the learning philosophy <ArrowRight size={16} aria-hidden="true" /></Link>
         </div>
       </section>
 
