@@ -15,13 +15,13 @@ export default function ContactPage() {
         <div className="container contact-grid">
           <div className="contact-intro">
             <p className="kicker">A note before you begin</p>
-            <h2>This form is not connected to the admissions team.</h2>
-            <p>You can check a general question in this browser, but it will not be sent or saved. Verified contact details and a live enquiry service are not available yet.</p>
-            <p className="contact-info-note">Please do not enter a child’s name, contact details, health information, or other identifying details.</p>
+            <h2>Share your admission enquiry.</h2>
+            <p>Submit the requested details and wait for a confirmation reference before considering your enquiry received. A reference appears only after the form receives a saved response.</p>
+            <p className="contact-info-note">Please do not include sensitive information beyond the details requested in the form.</p>
           </div>
 
           <div className="contact-card">
-            <h3>Prepare a general question</h3>
+            <h3>Admission enquiry</h3>
             <EnquiryForm />
           </div>
         </div>

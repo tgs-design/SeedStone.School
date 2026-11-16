@@ -81,9 +81,9 @@ export default function HomePage() {
               <span className="hero-heading-accent">Online Global School.</span>
             </h1>
             <p className="lead">At Seedstone School, we believe a child&apos;s education should build strong academic foundations without leaving their ambitions waiting for later.</p>
-            <p className="hero-class-focus">Primary (Classes 1–5) and Middle (Classes 6–8).</p>
+            {/* <p className="hero-class-focus">Primary (Classes 1–5) and Middle (Classes 6–8).</p> */}
             <div className="button-row">
-              <a className="primary-button" href="#enquiry">Admissions Enquiry <ArrowRight size={17} aria-hidden="true" /></a>
+              <a className="primary-button" href="#enquiry">Book a Demo <ArrowRight size={17} aria-hidden="true" /></a>
               <a className="secondary-button" href="#learning-approach">Explore Seedstone <ArrowDownRight size={17} aria-hidden="true" /></a>
             </div>
           </div>
@@ -105,11 +105,26 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="page-section editorial-statement-section" aria-labelledby="editorial-statement-title">
+        <div className="container editorial-statement">
+          <ul className="editorial-reframes" aria-label="What Seedstone School is not">
+            <li>Not just online classes.</li>
+            <li>Not just courses.</li>
+            <li>Not just another classroom.</li>
+          </ul>
+          <h2 id="editorial-statement-title" className="editorial-statement-heading">
+            <span>We are reimagining</span>
+            <span className="editorial-statement-accent">The Way Children Learn.</span>
+          </h2>
+          {/* <p className="editorial-statement-support">A school experience that brings together structured learning, dedicated guidance and room for ambition.</p> */}
+        </div>
+      </section>
+
       <section className="page-section launch-why">
         <div className="container">
           <SectionHeading
             eyebrow="Our approach"
-            title="A Different Approach to Schooling."
+            title="A Different Approach to Learning."
             description="A strong education does more than cover the syllabus. It gives children the guidance to learn well, the freedom to explore and the confidence to find their own path."
           />
           <ol className="theme-grid approach-principles-grid">
@@ -122,26 +137,12 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
-          <div className="approach-association">
+          {/* <div className="approach-association">
             Seedstone School, in association with PhysicsWallah.
-          </div>
+          </div> */}
         </div>
       </section>
 
-      <section className="page-section editorial-statement-section" aria-labelledby="editorial-statement-title">
-        <div className="container editorial-statement">
-          <ul className="editorial-reframes" aria-label="What Seedstone School is not">
-            <li>Not just online classes.</li>
-            <li>Not just courses.</li>
-            <li>Not just another classroom.</li>
-          </ul>
-          <h2 id="editorial-statement-title" className="editorial-statement-heading">
-            <span>We are reimagining</span>
-            <span className="editorial-statement-accent">The Way Children Learn.</span>
-          </h2>
-          <p className="editorial-statement-support">A school experience that brings together structured learning, dedicated guidance and room for ambition.</p>
-        </div>
-      </section>
 
       <section className="page-section ambition-section">
         <div className="container ambition-layout">
@@ -211,7 +212,7 @@ export default function HomePage() {
             <p className="kicker">Admissions · Classes 1–8</p>
             <h2>Admission Enquiry</h2>
             <p>Interested in Seedstone School? Share your details and our admissions team can connect with you.</p>
-            <p className="enquiry-safety-note">The admission enquiry service is not connected yet. Submissions are not currently saved or sent; please wait until the connection is enabled before entering personal details.</p>
+            <p className="enquiry-safety-note">Please share only the requested details. Your enquiry is received only after this form displays a confirmation reference.</p>
           </div>
           <div className="contact-card enquiry-card">
             <EnquiryForm />
@@ -224,7 +225,7 @@ export default function HomePage() {
           <div className="coming-soon-panel">
             <div>
               <p className="kicker">Coming soon</p>
-              <h2 id="coming-soon-title">A new Seedstone School website is coming soon.</h2>
+              <h1 id="coming-soon-title">Discover a school experience designed to give every child more room to learn, explore and grow..</h1>
             </div>
             <a className="secondary-button coming-soon-button" href="#enquiry">Enquire Now <ArrowRight size={17} aria-hidden="true" /></a>
           </div>

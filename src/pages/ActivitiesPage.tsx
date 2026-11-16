@@ -122,7 +122,7 @@ export default function ActivitiesPage() {
 
       <section className="page-section final-cta-section small-cta">
         <div className="container final-cta-box">
-          <div><p className="kicker">Ask about enrichment</p><h2>Have an activity idea or question?</h2><p>The enquiry form is a browser-only prototype and will not save or send your details.</p></div>
+          <div><p className="kicker">Ask about enrichment</p><h2>Have an activity idea or question?</h2><p>Submit your details through the admission enquiry form and wait for its confirmation reference.</p></div>
           <button type="button" className="primary-button" onClick={() => window.dispatchEvent(new CustomEvent('open-enquiry'))}>Prepare an enquiry</button>
         </div>
       </section>

@@ -111,7 +111,7 @@ export default function CurriculumPage() {
 
       <section className="page-section final-cta-section small-cta">
         <div className="container final-cta-box">
-          <div><p className="kicker">Classes 1–8 enquiry</p><h2>Have a question about the current focus?</h2><p>The form validates in this browser only. It will not save or send your details.</p></div>
+          <div><p className="kicker">Classes 1–8 enquiry</p><h2>Have a question about the current focus?</h2><p>Submit your details through the admission enquiry form and wait for its confirmation reference.</p></div>
           <button type="button" className="primary-button" onClick={() => window.dispatchEvent(new CustomEvent('open-enquiry'))}>Prepare an enquiry</button>
         </div>
       </section>

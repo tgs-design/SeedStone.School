@@ -26,7 +26,7 @@ export default function AboutPage() {
             <p className="kicker">Current focus · Classes 1–8</p>
             <h2>Want to learn more?</h2>
           </div>
-          <Link to="/contact" className="primary-button">Enquire Now <ArrowRight size={17} aria-hidden="true" /></Link>
+          <Link to="/#enquiry" className="primary-button">Book a Demo <ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </section>
     </>

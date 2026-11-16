@@ -55,7 +55,7 @@ export default function ParentPartnershipPage() {
             <p className="kicker">Book a conversation</p>
             <h2>Start with your questions.</h2>
           </div>
-          <Link to="/contact" className="primary-button">Book a Demo <ArrowRight size={17} aria-hidden="true" /></Link>
+          <Link to="/#enquiry" className="primary-button">Book a Demo <ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </section>
     </>

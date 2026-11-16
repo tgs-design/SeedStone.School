@@ -30,7 +30,7 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          <a href="#enquiry" className="primary-button compact-button" onClick={() => setMobileOpen(false)}>Enquire Now</a>
+          <a href="/#enquiry" className="primary-button compact-button" onClick={() => setMobileOpen(false)}>Book a Demo</a>
           <button type="button" className="menu-toggle" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} aria-controls="main-navigation" onClick={() => setMobileOpen((open) => !open)}>
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>

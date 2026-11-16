@@ -14,8 +14,8 @@ function doPost(event) {
     const data = event && event.parameter ? event.parameter : {}
     const studentName = cleanText(data.studentName, 100)
     const parentName = cleanText(data.parentName, 100)
-    const mobileNumber = cleanText(data.mobileNumber, 20)
-    const interestedGrade = cleanText(data.interestedGrade, 20)
+    const mobileNumber = cleanText(data.mobile || data.mobileNumber, 20)
+    const interestedGrade = cleanText(data.grade || data.interestedGrade, 20)
     const city = cleanText(data.city, 80)
 
     if (!studentName || !parentName || !isValidMobileNumber(mobileNumber) ||

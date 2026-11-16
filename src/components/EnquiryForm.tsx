@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
 type FormState = {
@@ -12,6 +12,12 @@ type FormState = {
 
 type FormErrors = Partial<Record<keyof FormState, string>>
 type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error'
+
+type SubmissionResponse = {
+  status?: unknown
+  enquiryId?: unknown
+  message?: unknown
+}
 
 const initialValues: FormState = {
   studentName: '',
@@ -28,24 +34,17 @@ const citySuggestions = [
   'Delhi', 'Guwahati', 'Hyderabad', 'Indore', 'Jaipur', 'Kochi', 'Kolkata',
   'Lucknow', 'Mumbai', 'Nagpur', 'Patna', 'Pune', 'Ranchi', 'Surat', 'Other',
 ]
-const appsScriptUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL?.trim() ?? ''
 const responseTimeoutMs = 30_000
 
 function isValidMobileNumber(value: string) {
   return /^(?:\+?91[\s-]?)?[6-9]\d{9}$/.test(value.trim())
 }
 
-function getAppsScriptEndpoint() {
-  try {
-    const url = new URL(appsScriptUrl)
-    if (url.protocol === 'https:' && url.hostname === 'script.google.com' && /^\/macros\/s\/[^/]+\/exec$/.test(url.pathname)) {
-      return url.toString()
-    }
-  } catch {
-    return ''
-  }
-
-  return ''
+function getSubmissionError(response: Response, result: SubmissionResponse | null) {
+  if (typeof result?.message === 'string') return result.message
+  if (response.status === 503) return 'The enquiry service is not configured. Please contact the school directly.'
+  if (response.status >= 500) return 'The enquiry service could not save your details. Please try again later.'
+  return 'We couldn’t submit your enquiry. Check your details and try again.'
 }
 
 export default function EnquiryForm() {
@@ -53,48 +52,22 @@ export default function EnquiryForm() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [status, setStatus] = useState<SubmissionStatus>('idle')
   const [confirmation, setConfirmation] = useState('')
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [submissionUncertain, setSubmissionUncertain] = useState(false)
   const submittingRef = useRef(false)
-
-  useEffect(() => {
-    const receiveSubmissionResult = (event: MessageEvent<unknown>) => {
-      if (event.source !== iframeRef.current?.contentWindow || typeof event.data !== 'object' || event.data === null) return
-
-      const result = event.data as { type?: unknown; status?: unknown; enquiryId?: unknown }
-      if (result.type !== 'seedstone-enquiry-result' || status !== 'submitting') return
-
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-      submittingRef.current = false
-
-      if (result.status === 'saved' && typeof result.enquiryId === 'string') {
-        setStatus('success')
-        setConfirmation(`Thank you. Your enquiry has been received. Reference: ${result.enquiryId}`)
-      } else {
-        setStatus('error')
-        setConfirmation('We couldn’t save your enquiry. Please try again later.')
-      }
-    }
-
-    window.addEventListener('message', receiveSubmissionResult)
-    return () => {
-      window.removeEventListener('message', receiveSubmissionResult)
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [status])
+  const idempotencyKeyRef = useRef('')
 
   const handleChange = (field: keyof FormState, value: string) => {
     setFormData((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
-    submittingRef.current = false
+    idempotencyKeyRef.current = ''
+    setSubmissionUncertain(false)
     setStatus('idle')
     setConfirmation('')
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (submittingRef.current) return
+    if (submittingRef.current || submissionUncertain) return
 
     const nextErrors: FormErrors = {}
     if (!formData.studentName.trim()) nextErrors.studentName = 'Enter the student’s name.'
@@ -102,8 +75,8 @@ export default function EnquiryForm() {
     if (!formData.mobileNumber.trim()) nextErrors.mobileNumber = 'Enter a mobile number.'
     else if (!isValidMobileNumber(formData.mobileNumber)) nextErrors.mobileNumber = 'Enter a valid 10-digit Indian mobile number, with or without +91.'
     if (!formData.interestedGrade) nextErrors.interestedGrade = 'Select an interested grade.'
-    if (!formData.city) nextErrors.city = 'Select or enter a city.'
-    if (formData.city === 'Other' && !formData.otherCity.trim()) nextErrors.otherCity = 'Enter your city.'
+    if (!formData.city.trim()) nextErrors.city = 'Select or enter a city.'
+    if (formData.city.trim().toLowerCase() === 'other' && !formData.otherCity.trim()) nextErrors.otherCity = 'Enter your city.'
 
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -112,179 +85,192 @@ export default function EnquiryForm() {
       return
     }
 
-    const endpoint = getAppsScriptEndpoint()
-    if (!endpoint) {
-      setStatus('error')
-      setConfirmation('Admission enquiries are not available yet because the secure submission service has not been configured.')
-      return
-    }
-
     const payload = {
       studentName: formData.studentName.trim(),
       parentName: formData.parentName.trim(),
-      mobileNumber: formData.mobileNumber.trim(),
-      interestedGrade: formData.interestedGrade,
-      city: formData.city === 'Other' ? formData.otherCity.trim() : formData.city,
+      mobile: formData.mobileNumber.trim(),
+      grade: formData.interestedGrade,
+      city: formData.city.trim().toLowerCase() === 'other' ? formData.otherCity.trim() : formData.city.trim(),
     }
 
-    const submissionForm = document.createElement('form')
-    submissionForm.method = 'POST'
-    submissionForm.action = endpoint
-    submissionForm.target = 'seedstone-enquiry-response'
-    submissionForm.hidden = true
-    Object.entries(payload).forEach(([name, value]) => {
-      const input = document.createElement('input')
-      input.type = 'hidden'
-      input.name = name
-      input.value = value
-      submissionForm.append(input)
-    })
+    if (!idempotencyKeyRef.current) idempotencyKeyRef.current = crypto.randomUUID()
+    const idempotencyKey = idempotencyKeyRef.current
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), responseTimeoutMs)
 
-    document.body.append(submissionForm)
     submittingRef.current = true
     setStatus('submitting')
     setConfirmation('Submitting your enquiry…')
-    timeoutRef.current = setTimeout(() => {
-      submittingRef.current = false
+
+    try {
+      const response = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      })
+
+      let result: SubmissionResponse | null = null
+      try {
+        result = await response.json() as SubmissionResponse
+      } catch {
+        result = null
+      }
+
+      if (!response.ok || result?.status !== 'saved' || typeof result.enquiryId !== 'string' || !result.enquiryId) {
+        setStatus('error')
+        setConfirmation(getSubmissionError(response, result))
+        return
+      }
+
+      idempotencyKeyRef.current = ''
+      setSubmissionUncertain(false)
+      setStatus('success')
+      setConfirmation(`Thank you. Your enquiry has been received. Reference: ${result.enquiryId}`)
+    } catch (error) {
       setStatus('error')
-      setConfirmation('We haven’t received confirmation that your enquiry was saved. Please try again later.')
-      timeoutRef.current = null
-    }, responseTimeoutMs)
-    submissionForm.submit()
-    submissionForm.remove()
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setSubmissionUncertain(true)
+        setConfirmation('We couldn’t confirm whether your enquiry was saved. To avoid a duplicate, please contact the school before submitting it again.')
+      } else {
+        setConfirmation('We couldn’t reach the enquiry service. Check your connection and try again.')
+      }
+    } finally {
+      window.clearTimeout(timeoutId)
+      submittingRef.current = false
+    }
   }
 
   return (
-    <>
-      <iframe
-        ref={iframeRef}
-        name="seedstone-enquiry-response"
-        title="Admission enquiry submission response"
-        className="enquiry-response-frame"
-        tabIndex={-1}
-        aria-hidden="true"
-      />
-      <form className="enquiry-form inline admission-enquiry-form" onSubmit={handleSubmit} noValidate aria-busy={status === 'submitting'}>
+    <form className="enquiry-form inline admission-enquiry-form" onSubmit={handleSubmit} noValidate aria-busy={status === 'submitting'}>
+      <div className="input-group">
+        <label htmlFor="enquiry-student-name">Student Name <span className="required-indicator">Required</span></label>
+        <input
+          id="enquiry-student-name"
+          name="studentName"
+          type="text"
+          autoComplete="name"
+          maxLength={100}
+          required
+          disabled={status === 'submitting' || submissionUncertain}
+          value={formData.studentName}
+          onChange={(event) => handleChange('studentName', event.target.value)}
+          aria-invalid={Boolean(errors.studentName)}
+          aria-describedby={errors.studentName ? 'enquiry-student-name-error' : undefined}
+        />
+        {errors.studentName && <span id="enquiry-student-name-error" className="field-error">{errors.studentName}</span>}
+      </div>
+
+      <div className="input-group">
+        <label htmlFor="enquiry-parent-name">Parent Name <span className="required-indicator">Required</span></label>
+        <input
+          id="enquiry-parent-name"
+          name="parentName"
+          type="text"
+          autoComplete="name"
+          maxLength={100}
+          required
+          disabled={status === 'submitting' || submissionUncertain}
+          value={formData.parentName}
+          onChange={(event) => handleChange('parentName', event.target.value)}
+          aria-invalid={Boolean(errors.parentName)}
+          aria-describedby={errors.parentName ? 'enquiry-parent-name-error' : undefined}
+        />
+        {errors.parentName && <span id="enquiry-parent-name-error" className="field-error">{errors.parentName}</span>}
+      </div>
+
+      <div className="input-group">
+        <label htmlFor="enquiry-mobile">Mobile Number <span className="required-indicator">Required</span></label>
+        <input
+          id="enquiry-mobile"
+          name="mobileNumber"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          maxLength={16}
+          required
+          disabled={status === 'submitting' || submissionUncertain}
+          value={formData.mobileNumber}
+          onChange={(event) => handleChange('mobileNumber', event.target.value)}
+          aria-invalid={Boolean(errors.mobileNumber)}
+          aria-describedby={errors.mobileNumber ? 'enquiry-mobile-error' : 'enquiry-mobile-hint'}
+        />
+        {errors.mobileNumber
+          ? <span id="enquiry-mobile-error" className="field-error">{errors.mobileNumber}</span>
+          : <span id="enquiry-mobile-hint" className="form-note">Enter a 10-digit Indian mobile number; +91 is optional.</span>}
+      </div>
+
+      <div className="input-group">
+        <label htmlFor="enquiry-grade">Interested Grade <span className="required-indicator">Required</span></label>
+        <select
+          id="enquiry-grade"
+          name="interestedGrade"
+          required
+          disabled={status === 'submitting' || submissionUncertain}
+          value={formData.interestedGrade}
+          onChange={(event) => handleChange('interestedGrade', event.target.value)}
+          aria-invalid={Boolean(errors.interestedGrade)}
+          aria-describedby={errors.interestedGrade ? 'enquiry-grade-error' : undefined}
+        >
+          <option value="">Select a class</option>
+          {grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
+        </select>
+        {errors.interestedGrade && <span id="enquiry-grade-error" className="field-error">{errors.interestedGrade}</span>}
+      </div>
+
+      <div className="input-group">
+        <label htmlFor="enquiry-city">City <span className="required-indicator">Required</span></label>
+        <input
+          id="enquiry-city"
+          name="cityChoice"
+          type="text"
+          list="enquiry-city-options"
+          autoComplete="address-level2"
+          maxLength={80}
+          required
+          disabled={status === 'submitting' || submissionUncertain}
+          value={formData.city}
+          onChange={(event) => handleChange('city', event.target.value)}
+          aria-invalid={Boolean(errors.city)}
+          aria-describedby={errors.city ? 'enquiry-city-error' : undefined}
+        />
+        <datalist id="enquiry-city-options">
+          {citySuggestions.map((city) => <option key={city} value={city} />)}
+        </datalist>
+        {errors.city && <span id="enquiry-city-error" className="field-error">{errors.city}</span>}
+      </div>
+
+      {formData.city.trim().toLowerCase() === 'other' && (
         <div className="input-group">
-          <label htmlFor="enquiry-student-name">Student Name <span className="required-indicator">Required</span></label>
+          <label htmlFor="enquiry-other-city">Enter City <span className="required-indicator">Required</span></label>
           <input
-            id="enquiry-student-name"
-            name="studentName"
+            id="enquiry-other-city"
+            name="otherCity"
             type="text"
-            autoComplete="name"
-            maxLength={100}
-            required
-            value={formData.studentName}
-            onChange={(event) => handleChange('studentName', event.target.value)}
-            aria-invalid={Boolean(errors.studentName)}
-            aria-describedby={errors.studentName ? 'enquiry-student-name-error' : undefined}
-          />
-          {errors.studentName && <span id="enquiry-student-name-error" className="field-error">{errors.studentName}</span>}
-        </div>
-
-        <div className="input-group">
-          <label htmlFor="enquiry-parent-name">Parent Name <span className="required-indicator">Required</span></label>
-          <input
-            id="enquiry-parent-name"
-            name="parentName"
-            type="text"
-            autoComplete="name"
-            maxLength={100}
-            required
-            value={formData.parentName}
-            onChange={(event) => handleChange('parentName', event.target.value)}
-            aria-invalid={Boolean(errors.parentName)}
-            aria-describedby={errors.parentName ? 'enquiry-parent-name-error' : undefined}
-          />
-          {errors.parentName && <span id="enquiry-parent-name-error" className="field-error">{errors.parentName}</span>}
-        </div>
-
-        <div className="input-group">
-          <label htmlFor="enquiry-mobile">Mobile Number <span className="required-indicator">Required</span></label>
-          <input
-            id="enquiry-mobile"
-            name="mobileNumber"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            maxLength={16}
-            required
-            value={formData.mobileNumber}
-            onChange={(event) => handleChange('mobileNumber', event.target.value)}
-            aria-invalid={Boolean(errors.mobileNumber)}
-            aria-describedby={errors.mobileNumber ? 'enquiry-mobile-error' : 'enquiry-mobile-hint'}
-          />
-          {errors.mobileNumber
-            ? <span id="enquiry-mobile-error" className="field-error">{errors.mobileNumber}</span>
-            : <span id="enquiry-mobile-hint" className="form-note">Enter a 10-digit Indian mobile number; +91 is optional.</span>}
-        </div>
-
-        <div className="input-group">
-          <label htmlFor="enquiry-grade">Interested Grade <span className="required-indicator">Required</span></label>
-          <select
-            id="enquiry-grade"
-            name="interestedGrade"
-            required
-            value={formData.interestedGrade}
-            onChange={(event) => handleChange('interestedGrade', event.target.value)}
-            aria-invalid={Boolean(errors.interestedGrade)}
-            aria-describedby={errors.interestedGrade ? 'enquiry-grade-error' : undefined}
-          >
-            <option value="">Select a class</option>
-            {grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
-          </select>
-          {errors.interestedGrade && <span id="enquiry-grade-error" className="field-error">{errors.interestedGrade}</span>}
-        </div>
-
-        <div className="input-group">
-          <label htmlFor="enquiry-city">City <span className="required-indicator">Required</span></label>
-          <input
-            id="enquiry-city"
-            name="cityChoice"
-            type="text"
-            list="enquiry-city-options"
             autoComplete="address-level2"
             maxLength={80}
             required
-            value={formData.city}
-            onChange={(event) => handleChange('city', event.target.value)}
-            aria-invalid={Boolean(errors.city)}
-            aria-describedby={errors.city ? 'enquiry-city-error' : undefined}
+            disabled={status === 'submitting' || submissionUncertain}
+            value={formData.otherCity}
+            onChange={(event) => handleChange('otherCity', event.target.value)}
+            aria-invalid={Boolean(errors.otherCity)}
+            aria-describedby={errors.otherCity ? 'enquiry-other-city-error' : undefined}
           />
-          <datalist id="enquiry-city-options">
-            {citySuggestions.map((city) => <option key={city} value={city} />)}
-          </datalist>
-          {errors.city && <span id="enquiry-city-error" className="field-error">{errors.city}</span>}
+          {errors.otherCity && <span id="enquiry-other-city-error" className="field-error">{errors.otherCity}</span>}
         </div>
+      )}
 
-        {formData.city === 'Other' && (
-          <div className="input-group">
-            <label htmlFor="enquiry-other-city">Enter City <span className="required-indicator">Required</span></label>
-            <input
-              id="enquiry-other-city"
-              name="otherCity"
-              type="text"
-              autoComplete="address-level2"
-              maxLength={80}
-              required
-              value={formData.otherCity}
-              onChange={(event) => handleChange('otherCity', event.target.value)}
-              aria-invalid={Boolean(errors.otherCity)}
-              aria-describedby={errors.otherCity ? 'enquiry-other-city-error' : undefined}
-            />
-            {errors.otherCity && <span id="enquiry-other-city-error" className="field-error">{errors.otherCity}</span>}
-          </div>
-        )}
-
-        <button type="submit" className="primary-button" disabled={status === 'submitting'}>
-          {status === 'submitting' ? 'Submitting…' : 'Submit Admission Enquiry'}
-        </button>
-        {confirmation && (
-          <p className={`enquiry-feedback ${status}`} role={status === 'error' ? 'alert' : 'status'} aria-live="polite">
-            {confirmation}
-          </p>
-        )}
-      </form>
-    </>
+      <button type="submit" className="primary-button" disabled={status === 'submitting' || submissionUncertain}>
+        {status === 'submitting' ? 'Submitting…' : 'Submit Enquiry'}
+      </button>
+      {confirmation && (
+        <p className={`enquiry-feedback ${status}`} role={status === 'error' ? 'alert' : 'status'} aria-live="polite">
+          {confirmation}
+        </p>
+      )}
+    </form>
   )
 }
