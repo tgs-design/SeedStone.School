@@ -199,7 +199,7 @@ export default function HomePage() {
           boxShadow: "0 0 0 0 rgba(200, 25, 39, 0.4)",
         }}
       />
-      GOING LIVE SOON
+       CURRENTLY IN DEVELOPMENT
     </div>
 
     <h2
