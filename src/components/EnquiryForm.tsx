@@ -4,8 +4,8 @@ import type { FormEvent } from 'react'
 type FormState = {
   studentName: string
   parentName: string
-  mobileNumber: string
-  interestedGrade: string
+  mobile: string
+  grade: string
   city: string
   otherCity: string
 }
@@ -22,8 +22,8 @@ type SubmissionResponse = {
 const initialValues: FormState = {
   studentName: '',
   parentName: '',
-  mobileNumber: '',
-  interestedGrade: '',
+  mobile: '',
+  grade: '',
   city: '',
   otherCity: '',
 }
@@ -72,9 +72,9 @@ export default function EnquiryForm() {
     const nextErrors: FormErrors = {}
     if (!formData.studentName.trim()) nextErrors.studentName = 'Enter the student’s name.'
     if (!formData.parentName.trim()) nextErrors.parentName = 'Enter the parent or guardian’s name.'
-    if (!formData.mobileNumber.trim()) nextErrors.mobileNumber = 'Enter a mobile number.'
-    else if (!isValidMobileNumber(formData.mobileNumber)) nextErrors.mobileNumber = 'Enter a valid 10-digit Indian mobile number, with or without +91.'
-    if (!formData.interestedGrade) nextErrors.interestedGrade = 'Select an interested grade.'
+    if (!formData.mobile.trim()) nextErrors.mobile = 'Enter a mobile number.'
+    else if (!isValidMobileNumber(formData.mobile)) nextErrors.mobile = 'Enter a valid 10-digit Indian mobile number, with or without +91.'
+    if (!grades.includes(formData.grade)) nextErrors.grade = 'Select a valid interested grade.'
     if (!formData.city.trim()) nextErrors.city = 'Select or enter a city.'
     if (formData.city.trim().toLowerCase() === 'other' && !formData.otherCity.trim()) nextErrors.otherCity = 'Enter your city.'
 
@@ -88,8 +88,8 @@ export default function EnquiryForm() {
     const payload = {
       studentName: formData.studentName.trim(),
       parentName: formData.parentName.trim(),
-      mobile: formData.mobileNumber.trim(),
-      grade: formData.interestedGrade,
+      mobile: formData.mobile.trim(),
+      grade: formData.grade,
       city: formData.city.trim().toLowerCase() === 'other' ? formData.otherCity.trim() : formData.city.trim(),
     }
 
@@ -186,20 +186,20 @@ export default function EnquiryForm() {
         <label htmlFor="enquiry-mobile">Mobile Number <span className="required-indicator">Required</span></label>
         <input
           id="enquiry-mobile"
-          name="mobileNumber"
+          name="mobile"
           type="tel"
           inputMode="tel"
           autoComplete="tel"
           maxLength={16}
           required
           disabled={status === 'submitting' || submissionUncertain}
-          value={formData.mobileNumber}
-          onChange={(event) => handleChange('mobileNumber', event.target.value)}
-          aria-invalid={Boolean(errors.mobileNumber)}
-          aria-describedby={errors.mobileNumber ? 'enquiry-mobile-error' : 'enquiry-mobile-hint'}
+          value={formData.mobile}
+          onChange={(event) => handleChange('mobile', event.target.value)}
+          aria-invalid={Boolean(errors.mobile)}
+          aria-describedby={errors.mobile ? 'enquiry-mobile-error' : 'enquiry-mobile-hint'}
         />
-        {errors.mobileNumber
-          ? <span id="enquiry-mobile-error" className="field-error">{errors.mobileNumber}</span>
+        {errors.mobile
+          ? <span id="enquiry-mobile-error" className="field-error">{errors.mobile}</span>
           : <span id="enquiry-mobile-hint" className="form-note">Enter a 10-digit Indian mobile number; +91 is optional.</span>}
       </div>
 
@@ -207,25 +207,25 @@ export default function EnquiryForm() {
         <label htmlFor="enquiry-grade">Interested Grade <span className="required-indicator">Required</span></label>
         <select
           id="enquiry-grade"
-          name="interestedGrade"
+          name="grade"
           required
           disabled={status === 'submitting' || submissionUncertain}
-          value={formData.interestedGrade}
-          onChange={(event) => handleChange('interestedGrade', event.target.value)}
-          aria-invalid={Boolean(errors.interestedGrade)}
-          aria-describedby={errors.interestedGrade ? 'enquiry-grade-error' : undefined}
+          value={formData.grade}
+          onChange={(event) => handleChange('grade', event.target.value)}
+          aria-invalid={Boolean(errors.grade)}
+          aria-describedby={errors.grade ? 'enquiry-grade-error' : undefined}
         >
           <option value="">Select a class</option>
           {grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
         </select>
-        {errors.interestedGrade && <span id="enquiry-grade-error" className="field-error">{errors.interestedGrade}</span>}
+        {errors.grade && <span id="enquiry-grade-error" className="field-error">{errors.grade}</span>}
       </div>
 
       <div className="input-group">
         <label htmlFor="enquiry-city">City <span className="required-indicator">Required</span></label>
         <input
           id="enquiry-city"
-          name="cityChoice"
+          name="city"
           type="text"
           list="enquiry-city-options"
           autoComplete="address-level2"
