@@ -1,73 +1,6 @@
-import { ArrowDownRight, ArrowRight, BookOpen, Compass, Lightbulb, RefreshCw, ShieldCheck, Users } from 'lucide-react'
+import { ArrowDownRight, ArrowRight } from 'lucide-react'
 import HeroLearningWorld from '../components/HeroLearningWorld'
 import EnquiryForm from '../components/EnquiryForm'
-import SectionHeading from '../components/SectionHeading'
-
-const schoolingPrinciples = [
-  {
-    title: 'Two Teachers, One Learning Journey',
-    description: 'Our two-teacher model brings together subject teaching and dedicated class mentorship to support each student’s learning journey.',
-    icon: Users,
-  },
-  {
-    title: 'Freedom, with Structure',
-    description: 'Children shouldn’t have to put their interests on hold to keep up with school. Our online model creates more room for sports, arts, hobbies and other ambitions while maintaining a structured academic routine.',
-    icon: Compass,
-  },
-  {
-    title: 'Safety and Support',
-    description: 'A child’s learning environment should offer reassurance to parents and support to students. We aim to create a learning experience with clear expectations, responsible guidance and safeguards.',
-    icon: ShieldCheck,
-  },
-  {
-    title: 'Learning, Connection and Community',
-    description: 'School should be about more than lessons. Through clubs, interactive activities and opportunities to learn with peers, students can explore interests, exchange ideas and experience the joy of learning together.',
-    icon: Lightbulb,
-  },
-]
-
-const learningPrinciples = [
-  { title: 'Learn in Real Time', description: 'Build conceptual understanding through live, interactive lessons that encourage questions and active participation.', icon: BookOpen },
-  { title: 'Practise and Apply', description: 'Strengthen understanding through handwritten work, problem-solving, activities and projects that make learning an active process.', icon: Compass },
-  { title: 'Get Guided Support', description: 'Work through challenges with teachers and receive dedicated follow-up from your class mentor to address learning gaps and stay on track.', icon: RefreshCw },
-  { title: 'Track Your Progress', description: 'Regular assessments, feedback and progress reports help students understand their growth and help parents see where additional support may be needed.', icon: Lightbulb },
-]
-
-const academicStages = [
-  {
-    classes: 'Classes 1–5',
-    title: 'Primary',
-    description: 'Build foundational knowledge, curiosity, and effective learning habits.',
-  },
-  {
-    classes: 'Classes 6–8',
-    title: 'Middle',
-    description: 'Strengthen conceptual understanding and develop independent learning skills.',
-  },
-]
-
-const beyondClassroomAreas = [
-  {
-    title: 'STEM and Problem-Solving',
-    description: 'Explore scientific thinking, experimentation and real-world applications.',
-  },
-  {
-    title: 'Financial Literacy',
-    description: 'Develop an understanding of money, saving, budgeting and everyday financial choices.',
-  },
-  {
-    title: 'Entrepreneurship and Innovation',
-    description: 'Learn to identify problems, develop ideas and think creatively about solutions.',
-  },
-  {
-    title: 'Future-Ready Skills',
-    description: 'Build communication, critical thinking, collaboration and decision-making skills.',
-  },
-  {
-    title: 'Clubs and Interest-Based Learning',
-    description: 'Discover interests, explore new ideas and learn alongside peers beyond the regular curriculum.',
-  },
-]
 
 export default function HomePage() {
   return (
@@ -262,10 +195,11 @@ export default function HomePage() {
           height: "8px",
           borderRadius: "50%",
           background: "#C81927",
-          animation: "seedstonePulse 2s infinite",
+          animation: "seedstonePulse 2.2s ease-in-out infinite",
+          boxShadow: "0 0 0 0 rgba(200, 25, 39, 0.4)",
         }}
       />
-      CURRENTLY IN DEVELOPMENT
+      GOING LIVE SOON
     </div>
 
     <h2
@@ -278,10 +212,10 @@ export default function HomePage() {
         margin: "0 0 22px",
       }}
     >
-      Something Meaningful
+      A Smarter Way to Learn
       <br />
       <span style={{ color: "#C81927" }}>
-        Is Taking Shape.
+        Is Almost Here.
       </span>
     </h2>
 
@@ -294,9 +228,8 @@ export default function HomePage() {
         color: "#687B89",
       }}
     >
-      We're working on creating a better way for children
-      to learn, explore and grow. The Seedstone experience
-      is taking shape.
+      We’re preparing a more flexible, guided learning experience
+      for children to grow, explore and thrive with confidence.
     </p>
 
     <div
