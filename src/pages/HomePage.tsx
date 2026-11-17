@@ -120,7 +120,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="page-section launch-why">
+      {/* <section className="page-section launch-why">
         <div className="container">
           <SectionHeading
             eyebrow="Our approach"
@@ -137,14 +137,11 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
-          {/* <div className="approach-association">
-            Seedstone School, in association with PhysicsWallah.
-          </div> */}
         </div>
-      </section>
+      </section> */}
 
 
-      <section className="page-section ambition-section">
+      {/* <section className="page-section ambition-section">
         <div className="container ambition-layout">
           <SectionHeading eyebrow="Room to grow" title="More Room for Ambition. Structure for Success." />
           <div className="ambition-copy">
@@ -155,9 +152,9 @@ export default function HomePage() {
             <p>Because making room for ambition isn’t about doing less with a child’s education. It’s about making room for more in their life.</p>
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <section className="page-section cream-section" id="learning-approach">
+      {/* <section className="page-section cream-section" id="learning-approach">
         <div className="container">
           <SectionHeading eyebrow="Learning approach" title="Learning with Purpose at Every Step." description="A flexible school experience works best when students have a clear learning path, consistent practice and the right support along the way." />
           <ol className="learning-cycle-grid launch-learning-grid">
@@ -171,9 +168,9 @@ export default function HomePage() {
             ))}
           </ol>
         </div>
-      </section>
+      </section> */}
 
-      <section className="page-section launch-academics" id="academic-journey">
+      {/* <section className="page-section launch-academics" id="academic-journey">
         <div className="container">
           <SectionHeading eyebrow="Academic structure" title="Our Academic Journey." description="Classes 1–8, across Primary and Middle." />
           <div className="class-pathway-grid launch-class-grid">
@@ -186,9 +183,10 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </section>  */}
 
-      <section className="page-section beyond-classroom-section">
+
+      {/* <section className="page-section beyond-classroom-section">
         <div className="container">
           <SectionHeading
             eyebrow="A wider view of learning"
@@ -204,7 +202,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="page-section enquiry-section" id="enquiry">
         <div className="container enquiry-layout">
@@ -220,7 +218,126 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="coming-soon-section" aria-labelledby="coming-soon-title">
+
+<section
+  id="academic-journey"
+  style={{
+    position: "relative",
+    overflow: "hidden",
+    minHeight: "360px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    padding: "90px 24px",
+    background: "#FFFFFF",
+    isolation: "isolate",
+  }}
+>
+  <div
+    style={{
+      maxWidth: "780px",
+      animation: "seedstoneFade 1s ease-out both",
+    }}
+  >
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "9px 18px",
+        border: "1px solid #E5E9ED",
+        borderRadius: "50px",
+        background: "#FFFFFF",
+        color: "#10364D",
+        fontSize: "12px",
+        fontWeight: 700,
+        letterSpacing: "2px",
+        marginBottom: "28px",
+      }}
+    >
+      <span
+        style={{
+          width: "8px",
+          height: "8px",
+          borderRadius: "50%",
+          background: "#C81927",
+          animation: "seedstonePulse 2s infinite",
+        }}
+      />
+      CURRENTLY IN DEVELOPMENT
+    </div>
+
+    <h2
+      style={{
+        fontSize: "clamp(34px, 5.5vw, 62px)",
+        lineHeight: 1.15,
+        letterSpacing: "-2px",
+        fontWeight: 800,
+        color: "#10364D",
+        margin: "0 0 22px",
+      }}
+    >
+      Something Meaningful
+      <br />
+      <span style={{ color: "#C81927" }}>
+        Is Taking Shape.
+      </span>
+    </h2>
+
+    <p
+      style={{
+        maxWidth: "580px",
+        margin: "0 auto",
+        fontSize: "clamp(15px, 2vw, 19px)",
+        lineHeight: 1.8,
+        color: "#687B89",
+      }}
+    >
+      We're working on creating a better way for children
+      to learn, explore and grow. The Seedstone experience
+      is taking shape.
+    </p>
+
+    <div
+      style={{
+        width: "58px",
+        height: "4px",
+        borderRadius: "10px",
+        background: "#C81927",
+        margin: "30px auto 0",
+        animation: "seedstoneLine 1.2s ease-out both",
+      }}
+    />
+  </div>
+
+  <style>{`
+    @keyframes seedstoneFade {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes seedstonePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.8); }
+    }
+
+    @keyframes seedstoneLine {
+      from { width: 0; opacity: 0; }
+      to { width: 58px; opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      section *, section *::before, section *::after {
+        animation: none !important;
+      }
+    }
+  `}</style>
+</section>
+
+
+
+      {/* <section className="coming-soon-section" aria-labelledby="coming-soon-title">
         <div className="container">
           <div className="coming-soon-panel">
             <div>
@@ -230,7 +347,7 @@ export default function HomePage() {
             <a className="secondary-button coming-soon-button" href="#enquiry">Enquire Now <ArrowRight size={17} aria-hidden="true" /></a>
           </div>
         </div>
-      </section>
+      </section> */}
     </>
   )
 }
