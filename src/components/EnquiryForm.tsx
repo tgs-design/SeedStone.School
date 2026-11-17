@@ -1,16 +1,8 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { getSubmittedValues, validateForm } from './enquiryFormValidation'
+import type { FormErrors, FormState } from './enquiryFormValidation'
 
-type FormState = {
-  studentName: string
-  parentName: string
-  mobile: string
-  grade: string
-  city: string
-  otherCity: string
-}
-
-type FormErrors = Partial<Record<keyof FormState, string>>
 type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error'
 
 type SubmissionResponse = {
@@ -25,7 +17,6 @@ const initialValues: FormState = {
   mobile: '',
   grade: '',
   city: '',
-  otherCity: '',
 }
 
 const grades = Array.from({ length: 8 }, (_, index) => `Class ${index + 1}`)
@@ -35,10 +26,6 @@ const citySuggestions = [
   'Lucknow', 'Mumbai', 'Nagpur', 'Patna', 'Pune', 'Ranchi', 'Surat', 'Other',
 ]
 const responseTimeoutMs = 30_000
-
-function isValidMobileNumber(value: string) {
-  return /^(?:\+?91[\s-]?)?[6-9]\d{9}$/.test(value.trim())
-}
 
 function getSubmissionError(response: Response, result: SubmissionResponse | null) {
   if (typeof result?.message === 'string') return result.message
@@ -65,33 +52,36 @@ export default function EnquiryForm() {
     setConfirmation('')
   }
 
+  const handleOtherCityChange = () => {
+    setErrors((current) => ({ ...current, city: undefined }))
+    idempotencyKeyRef.current = ''
+    setSubmissionUncertain(false)
+    setStatus('idle')
+    setConfirmation('')
+  }
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (submittingRef.current || submissionUncertain) return
 
-    const nextErrors: FormErrors = {}
-    if (!formData.studentName.trim()) nextErrors.studentName = 'Enter the student’s name.'
-    if (!formData.parentName.trim()) nextErrors.parentName = 'Enter the parent or guardian’s name.'
-    if (!formData.mobile.trim()) nextErrors.mobile = 'Enter a mobile number.'
-    else if (!isValidMobileNumber(formData.mobile)) nextErrors.mobile = 'Enter a valid 10-digit Indian mobile number, with or without +91.'
-    if (!grades.includes(formData.grade)) nextErrors.grade = 'Select a valid interested grade.'
-    if (!formData.city.trim()) nextErrors.city = 'Select or enter a city.'
-    if (formData.city.trim().toLowerCase() === 'other' && !formData.otherCity.trim()) nextErrors.otherCity = 'Enter your city.'
+    const submittedFields = new FormData(event.currentTarget)
+    const selectedCity = String(submittedFields.get('city') ?? '').trim()
+    const values = getSubmittedValues(submittedFields)
+    const nextErrors = validateForm(values)
 
+    setFormData({
+      ...values,
+      city: selectedCity.toLowerCase() === 'other' && !values.city ? selectedCity : values.city,
+    })
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
+      if (import.meta.env.DEV) console.warn('Admission enquiry validation failed:', Object.keys(nextErrors))
       setStatus('idle')
       setConfirmation('')
       return
     }
 
-    const payload = {
-      studentName: formData.studentName.trim(),
-      parentName: formData.parentName.trim(),
-      mobile: formData.mobile.trim(),
-      grade: formData.grade,
-      city: formData.city.trim().toLowerCase() === 'other' ? formData.otherCity.trim() : formData.city.trim(),
-    }
+    const payload = values
 
     if (!idempotencyKeyRef.current) idempotencyKeyRef.current = crypto.randomUUID()
     const idempotencyKey = idempotencyKeyRef.current
@@ -234,13 +224,15 @@ export default function EnquiryForm() {
           disabled={status === 'submitting' || submissionUncertain}
           value={formData.city}
           onChange={(event) => handleChange('city', event.target.value)}
-          aria-invalid={Boolean(errors.city)}
-          aria-describedby={errors.city ? 'enquiry-city-error' : undefined}
+          aria-invalid={Boolean(errors.city) && formData.city.trim().toLowerCase() !== 'other'}
+          aria-describedby={errors.city && formData.city.trim().toLowerCase() !== 'other' ? 'enquiry-city-error' : undefined}
         />
         <datalist id="enquiry-city-options">
           {citySuggestions.map((city) => <option key={city} value={city} />)}
         </datalist>
-        {errors.city && <span id="enquiry-city-error" className="field-error">{errors.city}</span>}
+        {errors.city && formData.city.trim().toLowerCase() !== 'other' && (
+          <span id="enquiry-city-error" className="field-error">{errors.city}</span>
+        )}
       </div>
 
       {formData.city.trim().toLowerCase() === 'other' && (
@@ -254,12 +246,12 @@ export default function EnquiryForm() {
             maxLength={80}
             required
             disabled={status === 'submitting' || submissionUncertain}
-            value={formData.otherCity}
-            onChange={(event) => handleChange('otherCity', event.target.value)}
-            aria-invalid={Boolean(errors.otherCity)}
-            aria-describedby={errors.otherCity ? 'enquiry-other-city-error' : undefined}
+            defaultValue=""
+            onChange={handleOtherCityChange}
+            aria-invalid={Boolean(errors.city)}
+            aria-describedby={errors.city ? 'enquiry-other-city-error' : undefined}
           />
-          {errors.otherCity && <span id="enquiry-other-city-error" className="field-error">{errors.otherCity}</span>}
+          {errors.city && <span id="enquiry-other-city-error" className="field-error">{errors.city}</span>}
         </div>
       )}
 
