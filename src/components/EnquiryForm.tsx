@@ -264,7 +264,7 @@ export default function EnquiryForm() {
       )}
 
       <button type="submit" className="primary-button" disabled={status === 'submitting' || submissionUncertain}>
-        {status === 'submitting' ? 'Submitting…' : 'Submit Enquiry'}
+        {status === 'submitting' ? 'Submitting…' : 'Submit Now'}
       </button>
       {confirmation && (
         <p className={`enquiry-feedback ${status}`} role={status === 'error' ? 'alert' : 'status'} aria-live="polite">
