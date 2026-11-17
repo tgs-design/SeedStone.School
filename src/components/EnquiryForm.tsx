@@ -14,7 +14,7 @@ type FormErrors = Partial<Record<keyof FormState, string>>
 type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error'
 
 type SubmissionResponse = {
-  status?: unknown
+  success?: unknown
   enquiryId?: unknown
   message?: unknown
 }
@@ -103,7 +103,7 @@ export default function EnquiryForm() {
     setConfirmation('Submitting your enquiry…')
 
     try {
-      const response = await fetch('/api/enquiries', {
+      const response = await fetch('/api/enquiry', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export default function EnquiryForm() {
         result = null
       }
 
-      if (!response.ok || result?.status !== 'saved' || typeof result.enquiryId !== 'string' || !result.enquiryId) {
+      if (!response.ok || result?.success !== true || typeof result.enquiryId !== 'string' || !result.enquiryId) {
         setStatus('error')
         setConfirmation(getSubmissionError(response, result))
         return

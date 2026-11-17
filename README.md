@@ -9,20 +9,12 @@ npm install
 npm run dev
 ```
 
-The admission form posts to the same-origin Vercel function at
-`/api/enquiries`. For production, enable the Google Sheets API, create a
-service account, share the target spreadsheet with its email as an editor, and
-set `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`,
-`GOOGLE_SHEET_ID`, and `SEEDSTONE_ALLOWED_ORIGIN` in the Vercel project's
-production environment. Redeploy after setting these values. The function
-verifies the saved row before returning a confirmation reference. Do not put
-the service-account private key in a `VITE_` variable or commit it. For local
-API testing, run the project with `vercel dev` after setting these values in
-your local environment.
-
-The configured Apps Script URL currently redirects anonymous requests to
-organization sign-in, so the browser cannot receive its save receipt. The
-serverless route writes to the same spreadsheet using the Sheets API instead.
+The admission form posts to the same-origin Vercel function at `/api/enquiry`.
+Set `GOOGLE_APPS_SCRIPT_URL` as a server-side Vercel environment variable to
+the deployed Apps Script `/exec` URL, and redeploy. The function forwards the
+five enquiry fields and reports success only after Apps Script returns
+`success: true` with an enquiry ID. Do not expose this URL through a `VITE_`
+variable.
 
 Create and preview a production build with:
 
