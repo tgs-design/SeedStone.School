@@ -107,8 +107,23 @@ function doPost(event) {
       lock.releaseLock()
     }
   } catch (error) {
-    console.error(error)
-    return jsonResponse({ success: false, message: 'The enquiry could not be saved to the spreadsheet.' })
+    console.error('Apps Script doPost failed:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : '',
+    })
+    const safeMessages = [
+      'The Enquiries sheet has unexpected column headers.',
+      'The Enquiries sheet has data in the reserved submission-key column.',
+      'The saved enquiry row did not match the submitted details.',
+    ]
+    const diagnosticError = error instanceof Error && safeMessages.includes(error.message)
+      ? error.message
+      : 'An unexpected Apps Script or spreadsheet error occurred.'
+    return jsonResponse({
+      success: false,
+      message: 'The enquiry could not be saved to the spreadsheet.',
+      diagnosticError: diagnosticError,
+    })
   }
 }
 

@@ -184,6 +184,39 @@ test('returns the Apps Script failure message and logs its success value', async
   assert.equal(diagnostics[0].details.enquiryIdExists, false)
 })
 
+test('forwards a sanitized Apps Script diagnostic without exposing submitted values', async () => {
+  process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  globalThis.fetch = async () => ({
+    status: 200,
+    ok: true,
+    redirected: true,
+    url: 'https://script.googleusercontent.com/macros/echo',
+    headers: { get: () => 'application/json' },
+    text: async () => JSON.stringify({
+      success: false,
+      message: 'The enquiry could not be saved to the spreadsheet.',
+      diagnosticError: `Failure for ${requestBody.studentName}, ${requestBody.parentName}, ${requestBody.mobile}, key ${submissionKey}`,
+    }),
+  })
+  const response = createResponse()
+  const originalConsoleError = console.error
+  console.error = () => {}
+
+  try {
+    await handler(createRequest(), response)
+  } finally {
+    console.error = originalConsoleError
+  }
+
+  assert.equal(response.statusCode, 502)
+  assert.equal(response.body.message, 'The enquiry could not be saved to the spreadsheet.')
+  assert.equal(response.body.diagnosticError.includes(requestBody.studentName), false)
+  assert.equal(response.body.diagnosticError.includes(requestBody.parentName), false)
+  assert.equal(response.body.diagnosticError.includes(requestBody.mobile), false)
+  assert.equal(response.body.diagnosticError.includes(submissionKey), false)
+  assert.ok(response.body.diagnosticError.includes('[redacted]'))
+})
+
 test('does not confirm a success body without a non-empty enquiry ID', async () => {
   process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
   globalThis.fetch = async () => ({

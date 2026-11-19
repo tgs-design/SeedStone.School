@@ -5,9 +5,11 @@ function sendJson(response, statusCode, body) {
   response.end(JSON.stringify(body))
 }
 
-function sendApiError(response, statusCode, code, message) {
+function sendApiError(response, statusCode, code, message, diagnosticError) {
   console.error('Enquiry API error returned to frontend:', { statusCode, code, message })
-  return sendJson(response, statusCode, { success: false, code, message })
+  const body = { success: false, code, message }
+  if (typeof diagnosticError === 'string') body.diagnosticError = diagnosticError
+  return sendJson(response, statusCode, body)
 }
 
 function getRequestBody(request) {
@@ -201,11 +203,15 @@ export default async function handler(request, response) {
       const appsScriptMessage = typeof result?.message === 'string'
         ? sanitizeResponsePreview(result.message, enquiry, submissionKey).trim()
         : ''
+      const diagnosticError = typeof result?.diagnosticError === 'string'
+        ? sanitizeResponsePreview(result.diagnosticError, enquiry, submissionKey).trim()
+        : ''
       return sendApiError(
         response,
         502,
         'APPS_SCRIPT_SUCCESS_NOT_CONFIRMED',
         appsScriptMessage || 'The enquiry could not be confirmed as saved. Please contact the school before retrying.',
+        diagnosticError || undefined,
       )
     }
 

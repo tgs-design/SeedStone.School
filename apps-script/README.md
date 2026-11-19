@@ -26,8 +26,15 @@ https://script.google.com/macros/s/AKfycbx-8ETLH0RO9kEve5A_HzFkL8CXNszKnwqcq9ecP
 
    `https://script.google.com/macros/s/AKfycbx-8ETLH0RO9kEve5A_HzFkL8CXNszKnwqcq9ecP6B1cFHDFKHx8O4RzUskBKtVYFD8/exec`
 
-4. Redeploy the Apps Script after changing `Code.gs`, and redeploy the website
-   after changing its Vercel environment variable. The website posts JSON
+4. When updating `Code.gs`, edit the existing Apps Script **Web app deployment**
+   whose URL is shown above (deployment ID `AKfycbx-8ETLH0RO9kEve5A_HzFkL8CXNszKnwqcq9ecP6B1cFHDFKHx8O4RzUskBKtVYFD8`):
+   choose **Deploy → Manage deployments**, edit that deployment, select **New
+   version**, and deploy it. Do not create a second deployment or change the
+   spreadsheet, headers, or rows. Then redeploy the Vercel **Production**
+   deployment for this website so it includes the `/api/enquiry` and frontend
+   diagnostic changes; keep the existing `GOOGLE_APPS_SCRIPT_URL` value. For
+   troubleshooting a Preview deployment, redeploy that Preview separately.
+   The website posts JSON
    containing `studentName`, `parentName`, `mobile`, `grade`, `city`, and an
    idempotency key to its same-origin `/api/enquiry` endpoint. That server-side
    route forwards the request and accepts success only when Apps Script's final

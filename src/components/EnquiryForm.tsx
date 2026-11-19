@@ -9,6 +9,7 @@ type SubmissionResponse = {
   success?: unknown
   enquiryId?: unknown
   message?: unknown
+  diagnosticError?: unknown
   code?: unknown
 }
 
@@ -29,6 +30,9 @@ const citySuggestions = [
 const responseTimeoutMs = 30_000
 
 function getSubmissionError(response: Response, result: SubmissionResponse | null) {
+  if (typeof result?.diagnosticError === 'string' && result.diagnosticError.trim()) {
+    return result.diagnosticError
+  }
   if (typeof result?.message === 'string') return result.message
   if (response.status === 503) return 'The enquiry service is not configured. Please contact the school directly.'
   if (response.status >= 500) return 'The enquiry service could not save your details. Please try again later.'
