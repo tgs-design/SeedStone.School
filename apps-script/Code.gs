@@ -92,13 +92,21 @@ function doPost(event) {
         submissionKey,
       ]
       const rowNumber = sheet.getLastRow() + 1
-      sheet.appendRow(row)
+      const targetRange = sheet.getRange(rowNumber, 1, 1, row.length)
+      targetRange.getCell(1, 5).setNumberFormat('@')
+      targetRange.setValues([row])
       sheet.getRange(rowNumber, 2).setNumberFormat('yyyy-mm-dd hh:mm:ss')
       const savedRow = sheet.getRange(rowNumber, 1, 1, row.length).getValues()[0]
       if (
         savedRow[0] !== row[0] ||
         !(savedRow[1] instanceof Date) ||
-        row.slice(2).some((value, index) => savedRow[index + 2] !== value)
+        savedRow[2] !== row[2] ||
+        savedRow[3] !== row[3] ||
+        String(savedRow[4] ?? '').trim() !== String(row[4]).trim() ||
+        savedRow[5] !== row[5] ||
+        savedRow[6] !== row[6] ||
+        savedRow[7] !== row[7] ||
+        savedRow[8] !== row[8]
       ) {
         throw new Error('The saved enquiry row did not match the submitted details.')
       }
