@@ -16,6 +16,7 @@ function doGet() {
 }
 
 function doPost(event) {
+  let stage = 'request-validation'
   try {
     const postBody = event && event.postData && event.postData.contents
     const data = postBody ? JSON.parse(postBody) : null
@@ -35,20 +36,24 @@ function doPost(event) {
       return jsonResponse({ success: false, message: 'Check the required enquiry details and try again.' })
     }
 
+    stage = 'spreadsheet-configuration'
     const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SEEDSTONE_SPREADSHEET_ID')
     if (!spreadsheetId) {
       return jsonResponse({ success: false, message: 'Spreadsheet configuration is missing.' })
     }
 
     const lock = LockService.getScriptLock()
+    stage = 'sheet-lock'
     lock.waitLock(10000)
     try {
+      stage = 'sheet-open'
       const spreadsheet = SpreadsheetApp.openById(spreadsheetId)
       const sheet = spreadsheet.getSheetByName(ENQUIRY_SHEET_NAME)
       if (!sheet) {
         return jsonResponse({ success: false, message: 'The Admission Enquiries tab was not found.' })
       }
 
+      stage = 'sheet-validation'
       if (sheet.getLastRow() === 0) {
         sheet.appendRow(ENQUIRY_HEADERS)
         sheet.setFrozenRows(1)
@@ -76,6 +81,9 @@ function doPost(event) {
         if (!isSameSubmission(existingEnquiry, studentName, parentName, mobileNumber, interestedGrade, city, submissionKey)) {
           return jsonResponse({ success: false, message: 'This submission key was already used for different enquiry details.' })
         }
+        if (!isValidEnquiryId(existingEnquiry[0])) {
+          return jsonResponse({ success: false, message: 'The saved enquiry could not be verified.' })
+        }
         return jsonResponse({ success: true, enquiryId: existingEnquiry[0] })
       }
 
@@ -94,7 +102,9 @@ function doPost(event) {
       const rowNumber = sheet.getLastRow() + 1
       const targetRange = sheet.getRange(rowNumber, 1, 1, row.length)
       targetRange.getCell(1, 5).setNumberFormat('@')
+      stage = 'row-write'
       targetRange.setValues([row])
+      stage = 'row-verification'
       sheet.getRange(rowNumber, 2).setNumberFormat('yyyy-mm-dd hh:mm:ss')
       const savedRow = sheet.getRange(rowNumber, 1, 1, row.length).getValues()[0]
       if (
@@ -116,22 +126,78 @@ function doPost(event) {
     }
   } catch (error) {
     console.error('Apps Script doPost failed:', {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : '',
+      stage: stage,
+      errorName: error instanceof Error ? error.name : 'UnknownError',
     })
-    const safeMessages = [
-      'The Enquiries sheet has unexpected column headers.',
-      'The Enquiries sheet has data in the reserved submission-key column.',
-      'The saved enquiry row did not match the submitted details.',
-    ]
-    const diagnosticError = error instanceof Error && safeMessages.includes(error.message)
-      ? error.message
-      : 'An unexpected Apps Script or spreadsheet error occurred.'
+    const submissionKey = event && event.postData && event.postData.contents
+      ? getSubmissionKey(event.postData.contents)
+      : ''
+    const recoveredEnquiryId = submissionKey
+      ? findConfirmedExistingSubmission(submissionKey, event.postData.contents)
+      : null
+    if (recoveredEnquiryId) {
+      return jsonResponse({ success: true, enquiryId: recoveredEnquiryId })
+    }
+
+    const diagnosticError = stage === 'row-verification'
+      ? 'The row was written but its saved values could not be verified.'
+      : stage === 'row-write'
+        ? 'The row write did not complete and no matching saved row was confirmed.'
+        : 'An unexpected Apps Script or spreadsheet error occurred.'
     return jsonResponse({
       success: false,
       message: 'The enquiry could not be saved to the spreadsheet.',
       diagnosticError: diagnosticError,
     })
+  }
+}
+
+function getSubmissionKey(postBody) {
+  try {
+    const data = JSON.parse(postBody)
+    return data && typeof data.submissionKey === 'string' ? data.submissionKey.trim() : ''
+  } catch {
+    return ''
+  }
+}
+
+function findConfirmedExistingSubmission(submissionKey, postBody) {
+  let data
+  try {
+    data = JSON.parse(postBody)
+  } catch {
+    return null
+  }
+
+  const lock = LockService.getScriptLock()
+  try {
+    lock.waitLock(10000)
+    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SEEDSTONE_SPREADSHEET_ID')
+    if (!spreadsheetId) return null
+    const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(ENQUIRY_SHEET_NAME)
+    if (!sheet) return null
+    const existingEnquiry = findExistingSubmission(sheet, submissionKey)
+    if (
+      !existingEnquiry ||
+      !isValidEnquiryId(existingEnquiry[0]) ||
+      !isSameSubmission(
+        existingEnquiry,
+        cleanText(data.studentName, 100),
+        cleanText(data.parentName, 100),
+        cleanText(data.mobile, 20),
+        cleanText(data.grade, 20),
+        cleanText(data.city, 80),
+        submissionKey,
+      )
+    ) return null
+    return existingEnquiry[0]
+  } catch (error) {
+    console.error('Apps Script saved-row recovery failed:', {
+      errorName: error instanceof Error ? error.name : 'UnknownError',
+    })
+    return null
+  } finally {
+    if (lock.hasLock()) lock.releaseLock()
   }
 }
 
@@ -153,6 +219,10 @@ function findExistingSubmission(sheet, submissionKey) {
   return matchingIndex < 0
     ? null
     : sheet.getRange(matchingIndex + 2, 1, 1, ENQUIRY_HEADERS.length).getValues()[0]
+}
+
+function isValidEnquiryId(value) {
+  return typeof value === 'string' && /^SS-[A-F0-9]{12}$/.test(value)
 }
 
 function isSameSubmission(row, studentName, parentName, mobileNumber, interestedGrade, city, submissionKey) {

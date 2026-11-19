@@ -40,7 +40,25 @@ function createRequest() {
   }
 }
 
-test('confirms valid Apps Script JSON after following its ContentService redirect', async () => {
+test('confirms a successful first submission with its saved enquiry ID', async () => {
+  process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  globalThis.fetch = async () => ({
+    status: 200,
+    ok: true,
+    redirected: false,
+    url: 'https://script.google.com/macros/s/test-deployment/exec',
+    headers: { get: () => 'application/json; charset=utf-8' },
+    text: async () => JSON.stringify({ success: true, enquiryId: 'SS-ABC123DEF456' }),
+  })
+  const response = createResponse()
+
+  await handler(createRequest(), response)
+
+  assert.equal(response.statusCode, 201)
+  assert.deepEqual(response.body, { success: true, enquiryId: 'SS-ABC123DEF456' })
+})
+
+test('follows Apps Script ContentService redirect and validates final JSON', async () => {
   process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
   let fetchOptions
   const diagnostics = []

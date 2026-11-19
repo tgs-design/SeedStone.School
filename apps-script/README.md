@@ -40,7 +40,9 @@ https://script.google.com/macros/s/AKfycbx-8ETLH0RO9kEve5A_HzFkL8CXNszKnwqcq9ecP
    route forwards the request and accepts success only when Apps Script's final
    response is HTTP-successful and its JSON body contains `success: true` and a
    non-empty `enquiryId`. Repeated requests with the same key return the
-   original reference rather than appending another row.
+   original reference rather than appending another row. After an Apps Script
+   error, the script rechecks the same key and confirms matching saved details
+   before it reports a successful write.
 5. Submit a test enquiry and confirm its row in the `Admission Enquiries` tab.
    The website displays success only after Apps Script confirms the saved row.
 
