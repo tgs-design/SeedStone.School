@@ -36,18 +36,37 @@ function validateEnquiry(data) {
   return enquiry
 }
 
+function getAppsScriptUrl() {
+  try {
+    const url = new URL(process.env.GOOGLE_APPS_SCRIPT_URL)
+    if (
+      url.protocol !== 'https:' ||
+      url.hostname !== 'script.google.com' ||
+      !/^\/(?:macros\/s\/[^/]+|a\/macros\/[^/]+\/s\/[^/]+)\/exec$/.test(url.pathname)
+    ) return null
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST')
     return sendJson(response, 405, { success: false, message: 'Use POST to submit an enquiry.' })
   }
 
-  const appsScriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL
+  const appsScriptUrl = getAppsScriptUrl()
   if (!appsScriptUrl) {
     return sendJson(response, 503, {
       success: false,
       message: 'The enquiry service is not configured. Please contact the school directly.',
     })
+  }
+
+  const submissionKey = request.headers['idempotency-key']
+  if (typeof submissionKey !== 'string' || !/^[0-9a-f-]{36}$/i.test(submissionKey)) {
+    return sendJson(response, 400, { success: false, message: 'Refresh the page and submit your enquiry again.' })
   }
 
   const enquiry = validateEnquiry(getRequestBody(request))
@@ -59,7 +78,9 @@ export default async function handler(request, response) {
     const appsScriptResponse = await fetch(appsScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(enquiry),
+      body: JSON.stringify({ ...enquiry, submissionKey }),
+      redirect: 'follow',
+      cache: 'no-store',
       signal: AbortSignal.timeout(25_000),
     })
     let result
@@ -89,11 +110,11 @@ export default async function handler(request, response) {
     }
 
     if (result?.success !== true) {
-      const message = typeof result?.message === 'string'
-        ? result.message
-        : 'Apps Script did not confirm that the enquiry was saved.'
       console.error('Apps Script did not confirm the enquiry save.')
-      return sendJson(response, 502, { success: false, message })
+      return sendJson(response, 502, {
+        success: false,
+        message: 'The enquiry could not be confirmed as saved. Please contact the school before retrying.',
+      })
     }
 
     if (typeof result.enquiryId !== 'string' || !result.enquiryId.trim()) {

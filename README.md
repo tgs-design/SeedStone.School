@@ -11,10 +11,12 @@ npm run dev
 
 The admission form posts to the same-origin Vercel function at `/api/enquiry`.
 Set `GOOGLE_APPS_SCRIPT_URL` as a server-side Vercel environment variable to
-the deployed Apps Script `/exec` URL, and redeploy. The function forwards the
-five enquiry fields and reports success only after Apps Script returns
-`success: true` with an enquiry ID. Do not expose this URL through a `VITE_`
-variable.
+the deployed Apps Script `/exec` URL for the existing spreadsheet, including
+the **Production** environment, and redeploy. The function validates the five
+enquiry fields and forwards them with an idempotency key. Apps Script verifies
+the appended row and returns a reference before the site reports success. Do
+not expose the URL through a `VITE_` variable. See
+[`apps-script/README.md`](./apps-script/README.md) for deployment steps.
 
 Create and preview a production build with:
 

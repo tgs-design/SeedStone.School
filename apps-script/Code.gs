@@ -7,6 +7,7 @@ const ENQUIRY_HEADERS = [
   'Interested Grade',
   'City',
   'Lead Status',
+  'Submission Key',
 ]
 const ENQUIRY_SHEET_NAME = 'Admission Enquiries'
 
@@ -22,9 +23,11 @@ function doPost(event) {
     const mobileNumber = cleanText(data.mobile, 20)
     const interestedGrade = cleanText(data.grade, 20)
     const city = cleanText(data.city, 80)
+    const submissionKey = typeof data.submissionKey === 'string' ? data.submissionKey.trim() : ''
 
     if (!studentName || !parentName || !isValidMobileNumber(mobileNumber) ||
-        !/^Class [1-8]$/.test(interestedGrade) || !city) {
+        !/^Class [1-8]$/.test(interestedGrade) || !city ||
+        !/^[0-9a-f-]{36}$/i.test(submissionKey)) {
       return jsonResponse({ success: false, message: 'Check the required enquiry details and try again.' })
     }
 
@@ -46,10 +49,30 @@ function doPost(event) {
         sheet.appendRow(ENQUIRY_HEADERS)
         sheet.setFrozenRows(1)
       } else {
-        const existingHeaders = sheet.getRange(1, 1, 1, ENQUIRY_HEADERS.length).getValues()[0]
-        if (ENQUIRY_HEADERS.some((header, index) => existingHeaders[index] !== header)) {
+        const existingHeaders = sheet.getRange(1, 1, 1, ENQUIRY_HEADERS.length - 1).getValues()[0]
+        if (ENQUIRY_HEADERS.slice(0, -1).some((header, index) => existingHeaders[index] !== header)) {
           throw new Error('The Enquiries sheet has unexpected column headers.')
         }
+        const submissionKeyHeader = sheet.getRange(1, ENQUIRY_HEADERS.length).getValue()
+        if (submissionKeyHeader && submissionKeyHeader !== ENQUIRY_HEADERS[ENQUIRY_HEADERS.length - 1]) {
+          throw new Error('The Enquiries sheet has unexpected column headers.')
+        }
+        if (!submissionKeyHeader) {
+          const lastRow = sheet.getLastRow()
+          if (lastRow > 1 && sheet.getRange(2, ENQUIRY_HEADERS.length, lastRow - 1, 1)
+            .getValues().some((row) => row[0] !== '')) {
+            throw new Error('The Enquiries sheet has data in the reserved submission-key column.')
+          }
+          sheet.getRange(1, ENQUIRY_HEADERS.length).setValue(ENQUIRY_HEADERS[ENQUIRY_HEADERS.length - 1])
+        }
+      }
+
+      const existingEnquiry = findExistingSubmission(sheet, submissionKey)
+      if (existingEnquiry) {
+        if (!isSameSubmission(existingEnquiry, studentName, parentName, mobileNumber, interestedGrade, city, submissionKey)) {
+          return jsonResponse({ success: false, message: 'This submission key was already used for different enquiry details.' })
+        }
+        return jsonResponse({ success: true, enquiryId: existingEnquiry[0] })
       }
 
       const enquiryId = 'SS-' + Utilities.getUuid().replace(/-/g, '').slice(0, 12).toUpperCase()
@@ -62,9 +85,11 @@ function doPost(event) {
         interestedGrade,
         safeCellText(city),
         'New',
+        submissionKey,
       ]
       const rowNumber = sheet.getLastRow() + 1
       sheet.appendRow(row)
+      sheet.getRange(rowNumber, 2).setNumberFormat('yyyy-mm-dd hh:mm:ss')
       const savedRow = sheet.getRange(rowNumber, 1, 1, row.length).getValues()[0]
       if (
         savedRow[0] !== row[0] ||
@@ -84,11 +109,32 @@ function doPost(event) {
 }
 
 function cleanText(value, maxLength) {
-  return String(value || '').trim().slice(0, maxLength)
+  if (typeof value !== 'string') return ''
+  const cleaned = value.trim()
+  return cleaned.length > 0 && cleaned.length <= maxLength ? cleaned : ''
 }
 
 function isValidMobileNumber(value) {
   return /^(?:\+?91[\s-]?)?[6-9]\d{9}$/.test(value)
+}
+
+function findExistingSubmission(sheet, submissionKey) {
+  const lastRow = sheet.getLastRow()
+  if (lastRow < 2) return null
+  const keys = sheet.getRange(2, ENQUIRY_HEADERS.length, lastRow - 1, 1).getValues()
+  const matchingIndex = keys.findIndex((row) => row[0] === submissionKey)
+  return matchingIndex < 0
+    ? null
+    : sheet.getRange(matchingIndex + 2, 1, 1, ENQUIRY_HEADERS.length).getValues()[0]
+}
+
+function isSameSubmission(row, studentName, parentName, mobileNumber, interestedGrade, city, submissionKey) {
+  return row[2] === safeCellText(studentName) &&
+    row[3] === safeCellText(parentName) &&
+    row[4] === safeCellText(mobileNumber) &&
+    row[5] === interestedGrade &&
+    row[6] === safeCellText(city) &&
+    row[8] === submissionKey
 }
 
 function safeCellText(value) {

@@ -14,15 +14,15 @@ function isValidMobileNumber(value: string) {
   return /^(?:\+?91[\s-]?)?[6-9]\d{9}$/.test(value)
 }
 
-export function getSubmittedValues(fields: FormData): FormState {
-  const selectedCity = String(fields.get('city') ?? '').trim()
+export function getSubmittedValues(values: FormState, otherCity: string): FormState {
+  const selectedCity = values.city.trim()
   return {
-    studentName: String(fields.get('studentName') ?? '').trim(),
-    parentName: String(fields.get('parentName') ?? '').trim(),
-    mobile: String(fields.get('mobile') ?? '').trim(),
-    grade: String(fields.get('grade') ?? '').trim(),
+    studentName: values.studentName.trim(),
+    parentName: values.parentName.trim(),
+    mobile: values.mobile.trim(),
+    grade: values.grade.trim(),
     city: selectedCity.toLowerCase() === 'other'
-      ? String(fields.get('otherCity') ?? '').trim()
+      ? otherCity.trim()
       : selectedCity,
   }
 }

@@ -36,6 +36,7 @@ function getSubmissionError(response: Response, result: SubmissionResponse | nul
 
 export default function EnquiryForm() {
   const [formData, setFormData] = useState<FormState>(initialValues)
+  const [otherCity, setOtherCity] = useState('')
   const [errors, setErrors] = useState<FormErrors>({})
   const [status, setStatus] = useState<SubmissionStatus>('idle')
   const [confirmation, setConfirmation] = useState('')
@@ -45,6 +46,7 @@ export default function EnquiryForm() {
 
   const handleChange = (field: keyof FormState, value: string) => {
     setFormData((current) => ({ ...current, [field]: value }))
+    if (field === 'city' && value.trim().toLowerCase() !== 'other') setOtherCity('')
     setErrors((current) => ({ ...current, [field]: undefined }))
     idempotencyKeyRef.current = ''
     setSubmissionUncertain(false)
@@ -52,7 +54,8 @@ export default function EnquiryForm() {
     setConfirmation('')
   }
 
-  const handleOtherCityChange = () => {
+  const handleOtherCityChange = (value: string) => {
+    setOtherCity(value)
     setErrors((current) => ({ ...current, city: undefined }))
     idempotencyKeyRef.current = ''
     setSubmissionUncertain(false)
@@ -62,17 +65,11 @@ export default function EnquiryForm() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (submittingRef.current || submissionUncertain) return
+    if (submittingRef.current) return
 
-    const submittedFields = new FormData(event.currentTarget)
-    const selectedCity = String(submittedFields.get('city') ?? '').trim()
-    const values = getSubmittedValues(submittedFields)
+    const values = getSubmittedValues(formData, otherCity)
     const nextErrors = validateForm(values)
 
-    setFormData({
-      ...values,
-      city: selectedCity.toLowerCase() === 'other' && !values.city ? selectedCity : values.city,
-    })
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       if (import.meta.env.DEV) console.warn('Admission enquiry validation failed:', Object.keys(nextErrors))
@@ -111,6 +108,7 @@ export default function EnquiryForm() {
       }
 
       if (!response.ok || result?.success !== true || typeof result.enquiryId !== 'string' || !result.enquiryId) {
+        if (response.status >= 500 || response.ok) setSubmissionUncertain(true)
         setStatus('error')
         setConfirmation(getSubmissionError(response, result))
         return
@@ -118,16 +116,15 @@ export default function EnquiryForm() {
 
       idempotencyKeyRef.current = ''
       setSubmissionUncertain(false)
+      setFormData(initialValues)
+      setOtherCity('')
+      setErrors({})
       setStatus('success')
       setConfirmation(`Thank you. Your enquiry has been received. Reference: ${result.enquiryId}`)
-    } catch (error) {
+    } catch {
       setStatus('error')
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        setSubmissionUncertain(true)
-        setConfirmation('We couldn’t confirm whether your enquiry was saved. To avoid a duplicate, please contact the school before submitting it again.')
-      } else {
-        setConfirmation('We couldn’t reach the enquiry service. Check your connection and try again.')
-      }
+      setSubmissionUncertain(true)
+      setConfirmation('We couldn’t confirm whether your enquiry was saved. Retry this same submission to safely check its status, or contact the school.')
     } finally {
       window.clearTimeout(timeoutId)
       submittingRef.current = false
@@ -246,8 +243,8 @@ export default function EnquiryForm() {
             maxLength={80}
             required
             disabled={status === 'submitting' || submissionUncertain}
-            defaultValue=""
-            onChange={handleOtherCityChange}
+            value={otherCity}
+            onChange={(event) => handleOtherCityChange(event.target.value)}
             aria-invalid={Boolean(errors.city)}
             aria-describedby={errors.city ? 'enquiry-other-city-error' : undefined}
           />
@@ -255,8 +252,12 @@ export default function EnquiryForm() {
         </div>
       )}
 
-      <button type="submit" className="primary-button" disabled={status === 'submitting' || submissionUncertain}>
-        {status === 'submitting' ? 'Submitting…' : 'Submit Now'}
+      <button type="submit" className="primary-button" disabled={status === 'submitting'}>
+        {status === 'submitting'
+          ? 'Submitting…'
+          : submissionUncertain
+            ? 'Retry Same Enquiry'
+            : 'Submit Now'}
       </button>
       {confirmation && (
         <p className={`enquiry-feedback ${status}`} role={status === 'error' ? 'alert' : 'status'} aria-live="polite">
