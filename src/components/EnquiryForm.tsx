@@ -9,6 +9,7 @@ type SubmissionResponse = {
   success?: unknown
   enquiryId?: unknown
   message?: unknown
+  code?: unknown
 }
 
 const initialValues: FormState = {
@@ -101,14 +102,43 @@ export default function EnquiryForm() {
       })
 
       let result: SubmissionResponse | null = null
+      let validJson = false
       try {
         result = await response.json() as SubmissionResponse
+        validJson = true
       } catch {
-        result = null
+        console.error('Enquiry API returned a non-JSON response:', {
+          status: response.status,
+          contentType: response.headers.get('content-type'),
+        })
+      }
+
+      if (!validJson) {
+        setSubmissionUncertain(response.status >= 500 || response.ok)
+        setStatus('error')
+        setConfirmation(`The enquiry API returned HTTP ${response.status} without a valid JSON response. Check the Vercel production function logs.`)
+        return
       }
 
       const enquiryId = typeof result?.enquiryId === 'string' ? result.enquiryId.trim() : ''
       if (!response.ok || result?.success !== true || !enquiryId) {
+        console.error('Enquiry API returned an error:', {
+          status: response.status,
+          code: typeof result?.code === 'string' ? result.code : 'missing',
+          hasMessage: typeof result?.message === 'string',
+          success: result?.success === true
+            ? true
+            : result?.success === false
+              ? false
+              : typeof result?.success === 'string' && /^(true|false)$/i.test(result.success)
+                ? result.success
+                : 'other-or-missing',
+          enquiryIdExists: Boolean(
+            result &&
+            typeof result === 'object' &&
+            Object.prototype.hasOwnProperty.call(result, 'enquiryId'),
+          ),
+        })
         if (response.status >= 500 || response.ok) setSubmissionUncertain(true)
         setStatus('error')
         setConfirmation(getSubmissionError(response, result))
@@ -122,10 +152,13 @@ export default function EnquiryForm() {
       setErrors({})
       setStatus('success')
       setConfirmation(`Thank you. Your enquiry has been received. Reference: ${enquiryId}`)
-    } catch {
+    } catch (error) {
+      const errorName = error instanceof Error ? error.name : 'UnknownError'
+      const errorMessage = error instanceof Error ? error.message.slice(0, 200) : 'Unknown network error'
+      console.error('Enquiry request failed before an API response:', { errorName, errorMessage })
       setStatus('error')
       setSubmissionUncertain(true)
-      setConfirmation('We couldn’t confirm whether your enquiry was saved. Retry this same submission to safely check its status, or contact the school.')
+      setConfirmation(`The enquiry API request failed (${errorName}: ${errorMessage}). Retry this same submission to safely check its status, or contact the school.`)
     } finally {
       window.clearTimeout(timeoutId)
       submittingRef.current = false

@@ -19,11 +19,6 @@ export default function HomePage() {
               <a className="primary-button" href="#enquiry">Book a Demo <ArrowRight size={17} aria-hidden="true" /></a>
               <a className="secondary-button" href="#learning-approach">Explore Seedstone <ArrowDownRight size={17} aria-hidden="true" /></a>
             </div>
-            <p className="hero-contact-link phone-contact-line">
-              <Phone size={16} aria-hidden="true" />
-              <span>Call admissions</span>
-              <a href="tel:+919148177357">91481 77357</a>
-            </p>
           </div>
           <HeroLearningWorld />
         </div>

@@ -43,6 +43,8 @@ function createRequest() {
 test('confirms valid Apps Script JSON after following its ContentService redirect', async () => {
   process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
   let fetchOptions
+  const diagnostics = []
+  const originalConsoleInfo = console.info
   globalThis.fetch = async (_url, options) => {
     fetchOptions = options
     return {
@@ -56,12 +58,34 @@ test('confirms valid Apps Script JSON after following its ContentService redirec
   }
   const response = createResponse()
 
-  await handler(createRequest(), response)
+  console.info = (message, details) => diagnostics.push({ message, details })
+  try {
+    await handler(createRequest(), response)
+  } finally {
+    console.info = originalConsoleInfo
+  }
 
   assert.equal(fetchOptions.redirect, 'follow')
   assert.equal(JSON.parse(fetchOptions.body).submissionKey, submissionKey)
   assert.equal(response.statusCode, 201)
   assert.deepEqual(response.body, { success: true, enquiryId: 'SS-ABC123' })
+  assert.deepEqual(diagnostics[0], {
+    message: 'Apps Script response diagnostics:',
+    details: {
+      status: 200,
+      ok: true,
+      redirected: true,
+      configuredHostname: 'script.google.com',
+      configuredPathname: '/macros/s/test-deployment/exec',
+      finalResponseHostname: 'script.googleusercontent.com',
+      finalResponsePathname: '/macros/echo',
+      contentType: 'application/json; charset=utf-8',
+      validJson: true,
+      successValue: true,
+      enquiryIdExists: true,
+      enquiryIdValid: true,
+    },
+  })
 })
 
 test('rejects a success-shaped response with a final HTTP error status', async () => {
@@ -90,26 +114,74 @@ test('rejects a success-shaped response with a final HTTP error status', async (
 
 test('rejects invalid JSON returned by Apps Script', async () => {
   process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  const responseBody = `<html>Student ${requestBody.studentName}; Parent ${requestBody.parentName}; Mobile ${requestBody.mobile}; Key ${submissionKey}; URL https://script.googleusercontent.com/macros/echo?user_content_key=private</html>`
+  const diagnostics = []
+  const errors = []
+  const originalConsoleInfo = console.info
+  const originalConsoleError = console.error
   globalThis.fetch = async () => ({
     status: 200,
     ok: true,
     redirected: true,
-    url: 'https://script.googleusercontent.com/macros/echo',
+    url: 'https://script.googleusercontent.com/macros/echo?user_content_key=private',
     headers: { get: () => 'text/html' },
-    text: async () => '<html>Sign in</html>',
+    text: async () => responseBody,
   })
   const response = createResponse()
-  const originalConsoleError = console.error
-  console.error = () => {}
+  console.info = (message, details) => diagnostics.push({ message, details })
+  console.error = (message, details) => errors.push({ message, details })
 
   try {
     await handler(createRequest(), response)
   } finally {
     console.error = originalConsoleError
+    console.info = originalConsoleInfo
   }
 
   assert.equal(response.statusCode, 502)
   assert.equal(response.body.success, false)
+  assert.equal(response.body.code, 'APPS_SCRIPT_INVALID_JSON')
+  assert.equal(diagnostics[0].details.finalResponseHostname, 'script.googleusercontent.com')
+  assert.equal(diagnostics[0].details.finalResponsePathname, '/macros/echo')
+  assert.equal(diagnostics[0].details.validJson, false)
+  const previewLog = JSON.stringify({ diagnostics, errors })
+  assert.ok(previewLog.includes('[redacted]'))
+  assert.ok(!previewLog.includes(requestBody.studentName))
+  assert.ok(!previewLog.includes(requestBody.parentName))
+  assert.ok(!previewLog.includes(requestBody.mobile))
+  assert.ok(!previewLog.includes(submissionKey))
+  assert.ok(!previewLog.includes('user_content_key'))
+})
+
+test('returns the Apps Script failure message and logs its success value', async () => {
+  process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  const diagnostics = []
+  const originalConsoleInfo = console.info
+  globalThis.fetch = async () => ({
+    status: 200,
+    ok: true,
+    redirected: true,
+    url: 'https://script.googleusercontent.com/macros/echo',
+    headers: { get: () => 'application/json' },
+    text: async () => JSON.stringify({
+      success: false,
+      message: 'The Admission Enquiries tab was not found.',
+    }),
+  })
+  const response = createResponse()
+  console.info = (message, details) => diagnostics.push({ message, details })
+
+  try {
+    await handler(createRequest(), response)
+  } finally {
+    console.info = originalConsoleInfo
+  }
+
+  assert.equal(response.statusCode, 502)
+  assert.equal(response.body.code, 'APPS_SCRIPT_SUCCESS_NOT_CONFIRMED')
+  assert.equal(response.body.message, 'The Admission Enquiries tab was not found.')
+  assert.equal(diagnostics[0].details.successValue, false)
+  assert.equal(diagnostics[0].details.enquiryIdExists, false)
 })
 
 test('does not confirm a success body without a non-empty enquiry ID', async () => {
