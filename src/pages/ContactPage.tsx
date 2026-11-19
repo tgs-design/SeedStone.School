@@ -1,3 +1,4 @@
+import { Phone } from 'lucide-react'
 import EnquiryForm from '../components/EnquiryForm'
 
 export default function ContactPage() {
@@ -18,6 +19,11 @@ export default function ContactPage() {
             <h2>Share your admission enquiry.</h2>
             <p>Submit the requested details and wait for a confirmation reference before considering your enquiry received. A reference appears only after the form receives a saved response.</p>
             <p className="contact-info-note">Please do not include sensitive information beyond the details requested in the form.</p>
+            <p className="phone-contact-line">
+              <Phone size={16} aria-hidden="true" />
+              <span>Call us</span>
+              <a href="tel:+919148177357">91481 77357</a>
+            </p>
           </div>
 
           <div className="contact-card">

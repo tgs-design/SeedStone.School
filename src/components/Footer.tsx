@@ -1,3 +1,4 @@
+import { Phone } from 'lucide-react'
 import { navItems } from '../data/siteData'
 
 export default function Footer() {
@@ -24,6 +25,12 @@ export default function Footer() {
           <h3>Admissions</h3>
           <ul className="footer-links">
             <li><a href="/#enquiry">Book a Demo</a></li>
+            <li>
+              <a className="footer-phone-link" href="tel:+919148177357">
+                <Phone size={15} aria-hidden="true" />
+                <span>91481 77357</span>
+              </a>
+            </li>
           </ul>
         </div>
       </div>

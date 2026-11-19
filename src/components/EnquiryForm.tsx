@@ -107,7 +107,8 @@ export default function EnquiryForm() {
         result = null
       }
 
-      if (!response.ok || result?.success !== true || typeof result.enquiryId !== 'string' || !result.enquiryId) {
+      const enquiryId = typeof result?.enquiryId === 'string' ? result.enquiryId.trim() : ''
+      if (!response.ok || result?.success !== true || !enquiryId) {
         if (response.status >= 500 || response.ok) setSubmissionUncertain(true)
         setStatus('error')
         setConfirmation(getSubmissionError(response, result))
@@ -120,7 +121,7 @@ export default function EnquiryForm() {
       setOtherCity('')
       setErrors({})
       setStatus('success')
-      setConfirmation(`Thank you. Your enquiry has been received. Reference: ${result.enquiryId}`)
+      setConfirmation(`Thank you. Your enquiry has been received. Reference: ${enquiryId}`)
     } catch {
       setStatus('error')
       setSubmissionUncertain(true)

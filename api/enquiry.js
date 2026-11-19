@@ -99,20 +99,20 @@ export default async function handler(request, response) {
       })
     }
 
-    if (!result || typeof result !== 'object' || Array.isArray(result) || result.success !== true) {
-      if (!appsScriptResponse.ok) {
-        console.error('Apps Script returned an HTTP error without a success confirmation:', {
-          status: appsScriptResponse.status,
-          redirected: appsScriptResponse.redirected,
-          finalHost: getResponseHost(appsScriptResponse.url),
-          contentType: appsScriptResponse.headers.get('content-type'),
-        })
-        return sendJson(response, 502, {
-          success: false,
-          message: `The Apps Script deployment returned HTTP ${appsScriptResponse.status}. Check its deployment access settings.`,
-        })
-      }
+    if (!appsScriptResponse.ok) {
+      console.error('Apps Script returned a non-success HTTP response:', {
+        status: appsScriptResponse.status,
+        redirected: appsScriptResponse.redirected,
+        finalHost: getResponseHost(appsScriptResponse.url),
+        contentType: appsScriptResponse.headers.get('content-type'),
+      })
+      return sendJson(response, 502, {
+        success: false,
+        message: `The Apps Script deployment returned HTTP ${appsScriptResponse.status}. Check its deployment access settings.`,
+      })
+    }
 
+    if (!result || typeof result !== 'object' || Array.isArray(result) || result.success !== true) {
       console.error('Apps Script did not confirm the enquiry save:', {
         status: appsScriptResponse.status,
         redirected: appsScriptResponse.redirected,
@@ -138,14 +138,6 @@ export default async function handler(request, response) {
       return sendJson(response, 502, {
         success: false,
         message: 'Apps Script confirmed success but did not return an enquiry ID. The save could not be verified.',
-      })
-    }
-
-    if (!appsScriptResponse.ok) {
-      console.warn('Apps Script returned a valid success body with a non-2xx HTTP status:', {
-        status: appsScriptResponse.status,
-        redirected: appsScriptResponse.redirected,
-        finalHost: getResponseHost(appsScriptResponse.url),
       })
     }
 

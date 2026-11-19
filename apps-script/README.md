@@ -17,8 +17,9 @@ https://script.google.com/macros/s/AKfycbx-8ETLH0RO9kEve5A_HzFkL8CXNszKnwqcq9ecP
    executing as the spreadsheet-owning account, with
    access set to **Anyone** so visitors who are not signed in can submit. The
    deployed endpoint must not redirect anonymous visitors to an organization
-   sign-in page. Review the spreadsheet's access policy before deployment;
-   the URL is public.
+   sign-in page. The website follows ContentService's response redirect and
+   checks the final HTTP response and JSON body. Review the spreadsheet's
+   access policy before deployment; the URL is public.
 3. Set `GOOGLE_APPS_SCRIPT_URL` to the deployed URL in the Vercel project's
    server-side **Production** environment variables (and Preview/Development
    if those deployments need to submit):
@@ -29,9 +30,10 @@ https://script.google.com/macros/s/AKfycbx-8ETLH0RO9kEve5A_HzFkL8CXNszKnwqcq9ecP
    after changing its Vercel environment variable. The website posts JSON
    containing `studentName`, `parentName`, `mobile`, `grade`, `city`, and an
    idempotency key to its same-origin `/api/enquiry` endpoint. That server-side
-   route forwards the request and accepts success only when Apps Script returns
-   `success: true` and a non-empty `enquiryId`. Repeated requests with the same
-   key return the original reference rather than appending another row.
+   route forwards the request and accepts success only when Apps Script's final
+   response is HTTP-successful and its JSON body contains `success: true` and a
+   non-empty `enquiryId`. Repeated requests with the same key return the
+   original reference rather than appending another row.
 5. Submit a test enquiry and confirm its row in the `Admission Enquiries` tab.
    The website displays success only after Apps Script confirms the saved row.
 

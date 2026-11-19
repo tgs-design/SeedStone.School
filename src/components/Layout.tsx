@@ -7,10 +7,10 @@ export default function Layout() {
   const location = useLocation()
 
   useEffect(() => {
-    document.title = 'Seedstone School'
+    document.title = 'Seedstone School | Online School for Classes 1–8'
     const description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
     if (description) {
-      description.content = 'Discover Seedstone School’s educational vision and current focus on Primary and Middle learning: Classes 1–8.'
+      description.content = 'Discover Seedstone School, an online school focused on Primary and Middle learning for Classes 1–8. Book a demo or call 9148177357.'
     }
   }, [])
 

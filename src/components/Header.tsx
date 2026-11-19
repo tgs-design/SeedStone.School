@@ -1,4 +1,4 @@
-import { Menu, X } from 'lucide-react'
+import { Menu, Phone, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { navItems } from '../data/siteData'
 
@@ -30,6 +30,10 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
+          <a className="header-phone-link" href="tel:+919148177357" aria-label="Call Seedstone School at 91481 77357">
+            <Phone size={15} aria-hidden="true" />
+            <span>91481 77357</span>
+          </a>
           <a href="/#enquiry" className="primary-button compact-button" onClick={() => setMobileOpen(false)}>Enquire Now </a>
           <button type="button" className="menu-toggle" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} aria-controls="main-navigation" onClick={() => setMobileOpen((open) => !open)}>
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}

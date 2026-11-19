@@ -140,6 +140,24 @@ button {
   gap: 12px;
 }
 
+.header-phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(12, 50, 73, 0.045);
+  color: var(--navy);
+  font-weight: 650;
+  white-space: nowrap;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.header-phone-link:hover {
+  color: var(--red);
+  background: rgba(193, 23, 32, 0.06);
+}
+
 .login-link {
   color: var(--navy);
   font-size: 0.92rem;
@@ -323,6 +341,38 @@ main {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+}
+
+.hero-contact-link {
+  margin-top: 20px;
+}
+
+.phone-contact-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.phone-contact-line svg,
+.footer-phone-link svg {
+  flex: 0 0 auto;
+  color: var(--red);
+}
+
+.phone-contact-line a {
+  color: var(--navy);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.footer-phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .hero-visual img,
@@ -3414,6 +3464,16 @@ main {
   overflow: visible;
 }
 
+.hero-world-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 80%;
+  border-radius: 28px;
+  box-shadow: 0 14px 36px rgba(12, 50, 73, 0.08);
+}
+
 .hero-world-label {
   position: absolute;
   padding: 6px 9px;
@@ -4137,6 +4197,10 @@ main {
     white-space: nowrap;
   }
 
+  .header-phone-link {
+    font-size: 0.78rem;
+  }
+
   .launch-two-column {
     grid-template-columns: 1fr;
     gap: 8px;
@@ -4150,6 +4214,17 @@ main {
   .launch-cta {
     align-items: stretch;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 380px) {
+  .header-phone-link {
+    font-size: 0.68rem;
+  }
+
+  .site-header .compact-button {
+    padding-inline: 0.5rem;
+    font-size: 0.74rem;
   }
 }
 
