@@ -85,32 +85,43 @@ export default async function handler(request, response) {
     })
     let result
     try {
-      result = await appsScriptResponse.json()
+      result = JSON.parse(await appsScriptResponse.text())
     } catch {
-      if (!appsScriptResponse.ok) {
-        console.error('Apps Script returned an HTTP error:', appsScriptResponse.status)
-        return sendJson(response, 502, {
-          success: false,
-          message: `The Apps Script deployment returned HTTP ${appsScriptResponse.status}. Check its deployment access settings.`,
-        })
-      }
-      console.error('Apps Script returned a non-JSON response.')
+      console.error('Apps Script response was not valid JSON:', {
+        status: appsScriptResponse.status,
+        redirected: appsScriptResponse.redirected,
+        finalHost: getResponseHost(appsScriptResponse.url),
+        contentType: appsScriptResponse.headers.get('content-type'),
+      })
       return sendJson(response, 502, {
         success: false,
         message: 'Apps Script returned an invalid response instead of JSON. Check the web app deployment.',
       })
     }
 
-    if (!appsScriptResponse.ok) {
-      console.error('Apps Script returned an HTTP error:', appsScriptResponse.status)
-      return sendJson(response, 502, {
-        success: false,
-        message: `The Apps Script deployment returned HTTP ${appsScriptResponse.status}. Check its deployment access settings.`,
-      })
-    }
+    if (!result || typeof result !== 'object' || Array.isArray(result) || result.success !== true) {
+      if (!appsScriptResponse.ok) {
+        console.error('Apps Script returned an HTTP error without a success confirmation:', {
+          status: appsScriptResponse.status,
+          redirected: appsScriptResponse.redirected,
+          finalHost: getResponseHost(appsScriptResponse.url),
+          contentType: appsScriptResponse.headers.get('content-type'),
+        })
+        return sendJson(response, 502, {
+          success: false,
+          message: `The Apps Script deployment returned HTTP ${appsScriptResponse.status}. Check its deployment access settings.`,
+        })
+      }
 
-    if (result?.success !== true) {
-      console.error('Apps Script did not confirm the enquiry save.')
+      console.error('Apps Script did not confirm the enquiry save:', {
+        status: appsScriptResponse.status,
+        redirected: appsScriptResponse.redirected,
+        finalHost: getResponseHost(appsScriptResponse.url),
+        contentType: appsScriptResponse.headers.get('content-type'),
+        responseKeys: result && typeof result === 'object' ? Object.keys(result) : [],
+        successType: typeof result?.success,
+        enquiryIdType: typeof result?.enquiryId,
+      })
       return sendJson(response, 502, {
         success: false,
         message: 'The enquiry could not be confirmed as saved. Please contact the school before retrying.',
@@ -118,19 +129,40 @@ export default async function handler(request, response) {
     }
 
     if (typeof result.enquiryId !== 'string' || !result.enquiryId.trim()) {
-      console.error('Apps Script did not confirm the enquiry save:', appsScriptResponse.status)
+      console.error('Apps Script success response did not contain a valid enquiry ID:', {
+        status: appsScriptResponse.status,
+        redirected: appsScriptResponse.redirected,
+        finalHost: getResponseHost(appsScriptResponse.url),
+        contentType: appsScriptResponse.headers.get('content-type'),
+      })
       return sendJson(response, 502, {
         success: false,
         message: 'Apps Script confirmed success but did not return an enquiry ID. The save could not be verified.',
       })
     }
 
-    return sendJson(response, 201, { success: true, enquiryId: result.enquiryId })
+    if (!appsScriptResponse.ok) {
+      console.warn('Apps Script returned a valid success body with a non-2xx HTTP status:', {
+        status: appsScriptResponse.status,
+        redirected: appsScriptResponse.redirected,
+        finalHost: getResponseHost(appsScriptResponse.url),
+      })
+    }
+
+    return sendJson(response, 201, { success: true, enquiryId: result.enquiryId.trim() })
   } catch (error) {
     console.error('Apps Script enquiry request failed:', error instanceof Error ? error.message : 'Unknown error')
     return sendJson(response, 502, {
       success: false,
       message: 'The enquiry service could not be reached. Please try again later or contact the school.',
     })
+  }
+}
+
+function getResponseHost(responseUrl) {
+  try {
+    return new URL(responseUrl).hostname
+  } catch {
+    return 'unknown'
   }
 }

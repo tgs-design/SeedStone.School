@@ -11,6 +11,10 @@ const ENQUIRY_HEADERS = [
 ]
 const ENQUIRY_SHEET_NAME = 'Admission Enquiries'
 
+function doGet() {
+  return jsonResponse({ success: true, message: 'Admission enquiry endpoint is available.' })
+}
+
 function doPost(event) {
   try {
     const postBody = event && event.postData && event.postData.contents
@@ -31,7 +35,7 @@ function doPost(event) {
       return jsonResponse({ success: false, message: 'Check the required enquiry details and try again.' })
     }
 
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID')
+    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SEEDSTONE_SPREADSHEET_ID')
     if (!spreadsheetId) {
       return jsonResponse({ success: false, message: 'Spreadsheet configuration is missing.' })
     }

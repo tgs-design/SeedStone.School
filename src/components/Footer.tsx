@@ -8,7 +8,7 @@ export default function Footer() {
           <a href="#home" className="brand footer-brand" aria-label="Seedstone School home">
             <img src="/seedstone-logo.svg" alt="Seedstone School" className="brand-logo footer-logo" />
           </a>
-          <p className="footer-copy">A Next-Gen Online Global School for Classes 1–8. Powered by PhysicsWallah.</p>
+          <p className="footer-copy">A Next-Gen Online Global School for Classes 1–8. </p>
         </div>
 
         <div>

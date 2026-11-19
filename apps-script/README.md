@@ -9,7 +9,7 @@ https://script.google.com/macros/s/AKfycbx-8ETLH0RO9kEve5A_HzFkL8CXNszKnwqcq9ecP
 
 1. Use the existing spreadsheet
    `10y3v-kc6WEA05RdJtmdoV3H8sM0_a2EDUz01K6qRAUI`. In **Project Settings →
-   Script Properties**, set `SPREADSHEET_ID` to that existing ID. Confirm that
+   Script Properties**, set `SEEDSTONE_SPREADSHEET_ID` to that existing ID. Confirm that
    the spreadsheet contains an `Admission Enquiries` tab. The script initializes
    headers if the tab is empty, adds a `Submission Key` column without
    overwriting existing cells, and verifies each newly appended row.
