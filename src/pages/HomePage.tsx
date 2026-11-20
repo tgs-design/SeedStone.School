@@ -140,7 +140,7 @@ export default function HomePage() {
       <section className="page-section enquiry-section" id="enquiry">
         <div className="container enquiry-layout">
           <div className="enquiry-intro">
-            <p className="kicker">Admissions · Classes 1–8</p>
+            <p className="kicker">Admissions Open · Classes 1–8</p>
             <h2>Admission Enquiry</h2>
             <p>Interested in Seedstone School? Share your details and our admissions team can connect with you.</p>
             <p className="enquiry-safety-note">Please share only the requested details. Your enquiry is received only after this form displays a confirmation reference.</p>
