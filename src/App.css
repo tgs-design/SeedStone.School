@@ -3977,7 +3977,7 @@ main {
 }
 
 .launch-hero {
-  padding-block: clamp(56px, 8vw, 104px);
+  padding-block: clamp(20px, 5vw, 32px);
 }
 
 .launch-hero .hero-copy h1 {
@@ -5355,12 +5355,13 @@ main {
 }
 
 .launch-hero {
-  padding-block: clamp(52px, 7vw, 88px);
+  padding-block: 36px 52px;
 }
 
 .launch-hero-grid {
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
   gap: clamp(32px, 5vw, 68px);
+  align-items: start;
 }
 
 .launch-hero .hero-world {
@@ -5438,7 +5439,7 @@ main {
   }
 
   .launch-hero {
-    padding-block: 42px;
+    padding-block: 28px 36px;
   }
 
   .hero-world-art {
