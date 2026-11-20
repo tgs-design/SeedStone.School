@@ -4,6 +4,9 @@ import { navItems } from '../data/siteData'
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const headerNavItems = navItems
+    .filter((item) => item.label !== 'Classes 1–8')
+    .map((item) => item.label === 'Learning' ? { ...item, path: '#academic-journey' } : item)
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -22,7 +25,7 @@ export default function Header() {
         </a>
 
         <nav id="main-navigation" className={`main-nav ${mobileOpen ? 'open' : ''}`} aria-label="Main navigation">
-          {navItems.map((item) => (
+          {headerNavItems.map((item) => (
             <a key={item.path} href={item.path} className="nav-link" onClick={() => setMobileOpen(false)}>
               {item.label}
             </a>

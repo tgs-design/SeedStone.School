@@ -17,7 +17,7 @@ export default function HomePage() {
             {/* <p className="hero-class-focus">Primary (Classes 1–5) and Middle (Classes 6–8).</p> */}
             <div className="button-row">
               <a className="primary-button" href="#enquiry">Book a Demo <ArrowRight size={17} aria-hidden="true" /></a>
-              <a className="secondary-button" href="#learning-approach">Explore Seedstone <ArrowDownRight size={17} aria-hidden="true" /></a>
+              <a className="secondary-button" href="#about">Explore Seedstone <ArrowDownRight size={17} aria-hidden="true" /></a>
             </div>
           </div>
           <HeroLearningWorld />
