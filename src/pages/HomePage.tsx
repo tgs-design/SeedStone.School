@@ -162,12 +162,11 @@ export default function HomePage() {
   style={{
     position: "relative",
     overflow: "hidden",
-    minHeight: "360px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    padding: "90px 24px",
+    padding: "clamp(32px, 3vw, 40px) 24px",
     background: "#FFFFFF",
     isolation: "isolate",
   }}

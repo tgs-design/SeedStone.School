@@ -14,7 +14,7 @@
   --radius: 22px;
   --page-gutter: clamp(16px, 4vw, 48px);
   --content-width: 1160px;
-  --section-space: clamp(42px, 5vw, 64px);
+  --section-space: clamp(36px, 3.5vw, 44px);
   --grid-gap: clamp(16px, 2.4vw, 28px);
   --type-page-title: clamp(2.15rem, 3.8vw, 3.45rem);
   --type-section-title: clamp(1.9rem, 3vw, 2.65rem);

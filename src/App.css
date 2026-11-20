@@ -5163,10 +5163,14 @@ main {
 }
 
 .editorial-statement-section {
-  padding-block: clamp(56px, 7vw, 88px);
+  padding-block: clamp(32px, 2.5vw, 36px) clamp(30px, 3vw, 40px);
   background:
     radial-gradient(circle at 91% 14%, rgba(81, 131, 132, 0.1) 0 7rem, transparent 7.1rem),
     var(--cream);
+}
+
+.enquiry-section {
+  padding-top: clamp(30px, 3vw, 40px);
 }
 
 .editorial-statement {
@@ -5320,7 +5324,12 @@ main {
   }
 
   .editorial-statement-section {
-    padding-block: 48px;
+    padding-block: 32px;
+    padding-bottom: 24px;
+  }
+
+  .enquiry-section {
+    padding-top: 20px;
   }
 
   .editorial-statement-heading {
@@ -5355,7 +5364,7 @@ main {
 }
 
 .launch-hero {
-  padding-block: 36px 52px;
+  padding-block: 36px 32px;
 }
 
 .launch-hero-grid {
@@ -5439,7 +5448,7 @@ main {
   }
 
   .launch-hero {
-    padding-block: 28px 36px;
+    padding-block: 32px;
   }
 
   .hero-world-art {
