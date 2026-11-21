@@ -6,7 +6,6 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const headerNavItems = navItems
     .filter((item) => item.label !== 'Classes 1–8')
-    .map((item) => item.label === 'Learning' ? { ...item, path: '#academic-journey' } : item)
 
   useEffect(() => {
     if (!mobileOpen) return

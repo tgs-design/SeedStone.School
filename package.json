@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test:api": "node --test api/enquiry.test.js",
+    "test:api": "node --test api/enquiry.test.js src/components/enquirySubmission.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

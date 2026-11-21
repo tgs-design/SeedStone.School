@@ -1,6 +1,8 @@
 import { Phone } from 'lucide-react'
 import { navItems } from '../data/siteData'
 
+const footerNavItems = navItems.filter((item) => item.label !== 'Classes 1–8')
+
 export default function Footer() {
   return (
     <footer className="site-footer">
@@ -15,7 +17,7 @@ export default function Footer() {
         <div>
           <h3>On this page</h3>
           <ul className="footer-links">
-            {navItems.map((item) => (
+            {footerNavItems.map((item) => (
               <li key={item.path}><a href={item.path}>{item.label}</a></li>
             ))}
           </ul>

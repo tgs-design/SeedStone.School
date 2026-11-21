@@ -5491,3 +5491,170 @@ main {
     height: 36px;
   }
 }
+
+@media (max-width: 640px) {
+  .site-header {
+    border-bottom: 0;
+    box-shadow: none;
+  }
+
+  .site-header .nav-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 58px;
+    gap: 0 10px;
+    padding-block: 6px;
+  }
+
+  .site-header .brand {
+    min-width: 0;
+  }
+
+  .site-header .brand-logo {
+    width: auto;
+    max-width: 112px;
+    height: 28px;
+  }
+
+  .site-header .header-actions {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 6px;
+  }
+
+  .site-header .header-phone-link {
+    min-height: 36px;
+    gap: 4px;
+    padding: 4px 5px;
+    font-size: 0.68rem;
+  }
+
+  .site-header .compact-button {
+    min-height: 36px;
+    padding: 0.45rem 0.48rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .site-header .menu-toggle {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .site-footer {
+    padding-top: 16px;
+  }
+
+  .site-footer .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 14px;
+    padding-bottom: 12px;
+  }
+
+  .site-footer .footer-grid > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .site-footer .footer-brand {
+    margin-bottom: 6px;
+    padding: 5px 8px;
+  }
+
+  .site-footer .footer-logo {
+    height: 30px;
+  }
+
+  .site-footer .footer-copy {
+    max-width: 42ch;
+    margin-bottom: 0;
+    line-height: 1.4;
+  }
+
+  .site-footer h3 {
+    margin-bottom: 4px;
+  }
+
+  .site-footer .footer-grid > div:nth-child(2) .footer-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 8px;
+  }
+
+  .site-footer .footer-grid > div:last-child .footer-links {
+    gap: 0;
+  }
+
+  .site-footer .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    overflow-wrap: anywhere;
+  }
+
+  .site-footer .footer-phone-link {
+    gap: 6px;
+  }
+
+  .site-footer .footer-bottom {
+    border-top: 0;
+    padding-block: 8px 10px;
+  }
+
+  .admission-enquiry-form,
+  .admission-enquiry-form .input-group {
+    min-width: 0;
+  }
+
+  .admission-enquiry-form .input-group input,
+  .admission-enquiry-form .input-group select {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+  }
+
+  .admission-enquiry-form > .primary-button {
+    max-width: 100%;
+    min-height: 48px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .enquiry-feedback {
+    overflow-wrap: anywhere;
+    line-height: 1.55;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-header .nav-shell {
+    min-height: 54px;
+    column-gap: 8px;
+  }
+
+  .site-header .brand-logo {
+    max-width: 104px;
+    height: 26px;
+  }
+
+  .site-header .header-actions {
+    gap: 4px;
+  }
+
+  .site-header .header-phone-link {
+    gap: 3px;
+    padding-inline: 4px;
+    font-size: 0.66rem;
+  }
+
+  .site-header .compact-button {
+    padding-inline: 0.42rem;
+    font-size: 0.68rem;
+  }
+
+  .site-header .menu-toggle {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+  }
+}

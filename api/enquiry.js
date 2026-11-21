@@ -231,6 +231,14 @@ export default async function handler(request, response) {
       ? sanitizeResponsePreview(error.message, enquiry, submissionKey)
       : 'Unknown error'
     console.error('Apps Script enquiry request failed:', { errorName, errorMessage })
+    if (errorName === 'TimeoutError' || errorName === 'AbortError') {
+      return sendApiError(
+        response,
+        504,
+        'APPS_SCRIPT_TIMEOUT',
+        'The enquiry service took too long to respond. Retry the same enquiry to safely check its status, or contact the school.',
+      )
+    }
     return sendApiError(
       response,
       502,

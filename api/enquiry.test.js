@@ -259,19 +259,47 @@ test('does not confirm a success body without a non-empty enquiry ID', async () 
   assert.equal(response.body.success, false)
 })
 
+test('reports an Apps Script timeout without treating the submission as confirmed', async () => {
+  process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  globalThis.fetch = async () => {
+    throw Object.assign(new Error('The operation timed out'), { name: 'TimeoutError' })
+  }
+  const response = createResponse()
+  const originalConsoleError = console.error
+  console.error = () => {}
+
+  try {
+    await handler(createRequest(), response)
+  } finally {
+    console.error = originalConsoleError
+  }
+
+  assert.equal(response.statusCode, 504)
+  assert.deepEqual(response.body, {
+    success: false,
+    code: 'APPS_SCRIPT_TIMEOUT',
+    message: 'The enquiry service took too long to respond. Retry the same enquiry to safely check its status, or contact the school.',
+  })
+})
+
 test('retries the same submission key without appending a duplicate row', async () => {
   process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
   const savedSubmissions = new Map()
-  const forwardedKeys = []
+  const forwardedSubmissions = []
   let appendedRows = 0
   globalThis.fetch = async (_url, options) => {
     const submission = JSON.parse(options.body)
-    forwardedKeys.push(submission.submissionKey)
-    let enquiryId = savedSubmissions.get(submission.submissionKey)
-    if (!enquiryId) {
-      enquiryId = 'SS-RETRY123'
-      savedSubmissions.set(submission.submissionKey, enquiryId)
+    forwardedSubmissions.push(submission)
+    let saved = savedSubmissions.get(submission.submissionKey)
+    if (!saved) {
+      saved = { enquiryId: 'SS-RETRY123', payload: submission }
+      savedSubmissions.set(submission.submissionKey, saved)
       appendedRows += 1
+    }
+
+    assert.deepEqual(submission, saved.payload)
+    if (forwardedSubmissions.length === 1) {
+      throw Object.assign(new Error('The operation timed out'), { name: 'TimeoutError' })
     }
 
     return {
@@ -280,7 +308,7 @@ test('retries the same submission key without appending a duplicate row', async 
       redirected: true,
       url: 'https://script.googleusercontent.com/macros/echo',
       headers: { get: () => 'application/json' },
-      text: async () => JSON.stringify({ success: true, enquiryId }),
+      text: async () => JSON.stringify({ success: true, enquiryId: saved.enquiryId }),
     }
   }
 
@@ -289,9 +317,13 @@ test('retries the same submission key without appending a duplicate row', async 
   await handler(createRequest(), firstResponse)
   await handler(createRequest(), retryResponse)
 
-  assert.equal(firstResponse.statusCode, 201)
+  assert.equal(firstResponse.statusCode, 504)
+  assert.equal(firstResponse.body.code, 'APPS_SCRIPT_TIMEOUT')
   assert.equal(retryResponse.statusCode, 201)
-  assert.equal(firstResponse.body.enquiryId, retryResponse.body.enquiryId)
-  assert.deepEqual(forwardedKeys, [submissionKey, submissionKey])
+  assert.equal(retryResponse.body.enquiryId, 'SS-RETRY123')
+  assert.deepEqual(forwardedSubmissions, [
+    { ...requestBody, submissionKey },
+    { ...requestBody, submissionKey },
+  ])
   assert.equal(appendedRows, 1)
 })
