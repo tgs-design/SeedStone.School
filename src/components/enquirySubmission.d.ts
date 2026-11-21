@@ -26,3 +26,10 @@ export function removeEnquirySubmission(
   submissionKey: string,
 ): EnquirySubmission[]
 export function saveEnquirySubmissions(storage: Storage, submissions: EnquirySubmission[]): void
+export function restoreCurrentEnquirySubmission(
+  storage: Storage,
+): EnquirySubmission | null
+export function saveCurrentEnquirySubmission(
+  storage: Storage,
+  submission: EnquirySubmission | null,
+): void

@@ -6,7 +6,9 @@ import {
   getRetrySubmission,
   getSubmissionForEnquiry,
   removeEnquirySubmission,
+  restoreCurrentEnquirySubmission,
   restoreEnquirySubmissions,
+  saveCurrentEnquirySubmission,
   saveEnquirySubmissions,
 } from './enquirySubmission.js'
 
@@ -105,4 +107,50 @@ test('preserves an uncertain submission when an edited enquiry is submitted', ()
   const afterNewEnquiryConfirmed = removeEnquirySubmission(restored, secondKey)
   saveEnquirySubmissions(storage, afterNewEnquiryConfirmed)
   assert.deepEqual(restoreEnquirySubmissions(storage), [original])
+})
+
+test('keeps the current submission separate from previous unresolved submissions', () => {
+  const storage = createStorage()
+  const oldEnquiry = { ...enquiry, studentName: 'Old Student' }
+  const oldSubmission = createEnquirySubmission(oldEnquiry, () => firstKey)
+  saveEnquirySubmissions(storage, [oldSubmission])
+
+  const freshEnquiry = { ...enquiry, studentName: 'Fresh Student', city: 'Surat' }
+  const freshSubmission = getSubmissionForEnquiry(
+    freshEnquiry,
+    restoreEnquirySubmissions(storage),
+    () => secondKey,
+  )
+  saveCurrentEnquirySubmission(storage, freshSubmission)
+
+  assert.equal(freshSubmission.submissionKey, secondKey)
+  assert.deepEqual(freshSubmission.payload, freshEnquiry)
+  assert.deepEqual(restoreEnquirySubmissions(storage), [oldSubmission])
+  assert.deepEqual(restoreCurrentEnquirySubmission(storage), freshSubmission)
+})
+
+test('refresh preserves exact current retry key and payload while leaving old recovery intact', () => {
+  const storage = createStorage()
+  const oldSubmission = createEnquirySubmission(
+    { ...enquiry, studentName: 'Old Student' },
+    () => firstKey,
+  )
+  const currentSubmission = createEnquirySubmission(
+    { ...enquiry, studentName: 'Current Student' },
+    () => secondKey,
+  )
+  saveEnquirySubmissions(storage, [oldSubmission])
+  saveCurrentEnquirySubmission(storage, currentSubmission)
+
+  const restoredCurrent = restoreCurrentEnquirySubmission(storage)
+  const restoredRecovery = restoreEnquirySubmissions(storage)
+  const retry = getSubmissionForEnquiry(
+    restoredCurrent.payload,
+    [restoredCurrent, ...restoredRecovery],
+    () => '323e4567-e89b-12d3-a456-426614174000',
+  )
+
+  assert.equal(retry.submissionKey, secondKey)
+  assert.deepEqual(retry.payload, currentSubmission.payload)
+  assert.deepEqual(restoredRecovery, [oldSubmission])
 })

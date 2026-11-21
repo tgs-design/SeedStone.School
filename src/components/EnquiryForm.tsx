@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { getSubmittedValues, validateForm } from './enquiryFormValidation'
 import type { FormErrors, FormState } from './enquiryFormValidation'
@@ -9,7 +9,9 @@ import {
   isSameEnquiry,
   removeEnquirySubmission,
   restoreEnquirySubmissions,
+  restoreCurrentEnquirySubmission,
   saveEnquirySubmissions,
+  saveCurrentEnquirySubmission,
 } from './enquirySubmission.js'
 import type { EnquirySubmission } from './enquirySubmission.js'
 
@@ -38,20 +40,21 @@ const citySuggestions = [
 ]
 
 function getSubmissionError(response: Response) {
-  if (response.status === 503) return 'The enquiry service is not configured. Please contact the school directly.'
-  if (response.status >= 500) return 'We could not confirm whether your enquiry was saved. This enquiry has been kept so you can safely check it again.'
-  return 'We couldn’t submit your enquiry. Check your details and try again.'
+  if (response.status === 503) return 'Please try again in a moment.'
+  if (response.status >= 500) return 'We could not confirm this enquiry. You can retry safely.'
+  return 'Please check the details and try again.'
 }
 
 function getInitialSubmissionState() {
   try {
     return {
-      pendingSubmissions: restoreEnquirySubmissions(window.sessionStorage),
+      recoverySubmissions: restoreEnquirySubmissions(window.sessionStorage),
+      currentSubmission: restoreCurrentEnquirySubmission(window.sessionStorage),
       restoreError: false,
     }
   } catch (error) {
-    console.error('Could not restore a saved enquiry submission:', error)
-    return { pendingSubmissions: [], restoreError: true }
+    console.error('Could not restore saved enquiry state:', error)
+    return { recoverySubmissions: [], currentSubmission: null, restoreError: true }
   }
 }
 
@@ -60,28 +63,20 @@ export default function EnquiryForm() {
   const [formData, setFormData] = useState<FormState>(initialValues)
   const [otherCity, setOtherCity] = useState('')
   const [errors, setErrors] = useState<FormErrors>({})
-  const [status, setStatus] = useState<SubmissionStatus>(
-    initialSubmissionState.restoreError || initialSubmissionState.pendingSubmissions.length > 0 ? 'error' : 'idle',
-  )
-  const [confirmation, setConfirmation] = useState(
-    initialSubmissionState.restoreError
-      ? 'A previous enquiry could not be restored safely. Please contact the school before submitting again.'
-      : initialSubmissionState.pendingSubmissions.length > 0
-        ? 'A previous enquiry may still be processing. Retry the same enquiry to safely check its status, or submit a new enquiry with your current details.'
-        : '',
-  )
-  const [pendingSubmissions, setPendingSubmissions] = useState<EnquirySubmission[]>(
-    initialSubmissionState.pendingSubmissions,
-  )
-  const submissionRestoreFailed = initialSubmissionState.restoreError
+  const [status, setStatus] = useState<SubmissionStatus>('idle')
+  const [confirmation, setConfirmation] = useState('')
+  const [currentUncertain, setCurrentUncertain] = useState(false)
   const submittingRef = useRef(false)
-  const pendingSubmissionsRef = useRef<EnquirySubmission[]>(initialSubmissionState.pendingSubmissions)
+  const recoverySubmissionsRef = useRef<EnquirySubmission[]>(initialSubmissionState.recoverySubmissions)
+  const currentSubmissionRef = useRef<EnquirySubmission | null>(initialSubmissionState.currentSubmission)
+  const recoveryRunningRef = useRef(false)
 
   const handleChange = (field: keyof FormState, value: string) => {
     setFormData((current) => ({ ...current, [field]: value }))
     if (field === 'city' && value.trim().toLowerCase() !== 'other') setOtherCity('')
     setErrors((current) => ({ ...current, [field]: undefined }))
     setStatus('idle')
+    setCurrentUncertain(false)
     setConfirmation('')
   }
 
@@ -89,8 +84,56 @@ export default function EnquiryForm() {
     setOtherCity(value)
     setErrors((current) => ({ ...current, city: undefined }))
     setStatus('idle')
+    setCurrentUncertain(false)
     setConfirmation('')
   }
+
+  useEffect(() => {
+    if (initialSubmissionState.restoreError) return
+    const timer = window.setTimeout(async () => {
+      if (recoveryRunningRef.current || recoverySubmissionsRef.current.length === 0) return
+      recoveryRunningRef.current = true
+      for (const submission of recoverySubmissionsRef.current) {
+        try {
+          const response = await fetch('/api/enquiry', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Idempotency-Key': submission.submissionKey,
+            },
+            body: JSON.stringify(submission.payload),
+            signal: AbortSignal.timeout(45_000),
+          })
+
+          let result: SubmissionResponse | null = null
+          try {
+            result = await response.json() as SubmissionResponse
+          } catch {
+            continue
+          }
+
+          const enquiryId = typeof result?.enquiryId === 'string' ? result.enquiryId.trim() : ''
+          if (response.ok && result?.success === true && enquiryId) {
+            const remaining = removeEnquirySubmission(
+              recoverySubmissionsRef.current,
+              submission.submissionKey,
+            )
+            recoverySubmissionsRef.current = remaining
+            try {
+              saveEnquirySubmissions(window.sessionStorage, remaining)
+            } catch (error) {
+              console.error('Could not update background enquiry recovery state:', error)
+            }
+          }
+        } catch (error) {
+          console.error('Background enquiry reconciliation paused:', error instanceof Error ? error.name : 'UnknownError')
+        }
+      }
+      recoveryRunningRef.current = false
+    }, 2_000)
+
+    return () => window.clearTimeout(timer)
+  }, [initialSubmissionState.restoreError])
 
   const sendSubmission = async (submission: EnquirySubmission) => {
     submittingRef.current = true
@@ -122,7 +165,8 @@ export default function EnquiryForm() {
 
       if (!validJson) {
         setStatus('error')
-        setConfirmation('We could not confirm whether your enquiry was saved. It has been kept safely for you to check again.')
+        setCurrentUncertain(true)
+        setConfirmation('We could not confirm this enquiry. You can retry safely.')
         return
       }
 
@@ -146,22 +190,29 @@ export default function EnquiryForm() {
           ),
         })
         setStatus('error')
+        setCurrentUncertain(response.status >= 500 && response.status !== 503)
         setConfirmation(getSubmissionError(response))
         return
       }
 
-      let cleanupWarning = ''
-      let remainingSubmissions = pendingSubmissionsRef.current
       try {
-        const nextSubmissions = removeEnquirySubmission(remainingSubmissions, submission.submissionKey)
-        saveEnquirySubmissions(window.sessionStorage, nextSubmissions)
-        remainingSubmissions = nextSubmissions
+        saveCurrentEnquirySubmission(window.sessionStorage, null)
       } catch (error) {
-        console.error('Could not clear the confirmed enquiry from session storage:', error)
-        cleanupWarning = ' Your browser could not clear the saved retry details.'
+        console.error('Could not clear the confirmed current enquiry:', error)
       }
-      pendingSubmissionsRef.current = remainingSubmissions
-      setPendingSubmissions(remainingSubmissions)
+      currentSubmissionRef.current = null
+      setCurrentUncertain(false)
+
+      try {
+        const remainingRecovery = removeEnquirySubmission(
+          recoverySubmissionsRef.current,
+          submission.submissionKey,
+        )
+        recoverySubmissionsRef.current = remainingRecovery
+        saveEnquirySubmissions(window.sessionStorage, remainingRecovery)
+      } catch (error) {
+        console.error('Could not clear confirmed recovery state:', error)
+      }
       const currentValues = getSubmittedValues(formData, otherCity)
       if (isSameEnquiry(currentValues, submission.payload)) {
         setFormData(initialValues)
@@ -169,12 +220,13 @@ export default function EnquiryForm() {
         setErrors({})
       }
       setStatus('success')
-      setConfirmation(`Thank you. Your enquiry has been received. Reference: ${enquiryId}${cleanupWarning}`)
+      setConfirmation(`Thank you. Your enquiry has been received. Reference: ${enquiryId}`)
     } catch (error) {
       const errorName = error instanceof Error ? error.name : 'UnknownError'
       console.error('Enquiry request failed before an API response:', { errorName })
       setStatus('error')
-      setConfirmation('We couldn’t confirm whether your enquiry was received. Retry this same submission to safely check its status, or contact the school.')
+      setCurrentUncertain(true)
+      setConfirmation('We could not confirm this enquiry. You can retry safely.')
     } finally {
       submittingRef.current = false
     }
@@ -182,7 +234,7 @@ export default function EnquiryForm() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (submittingRef.current || submissionRestoreFailed) return
+    if (submittingRef.current) return
 
     const payload = getSubmittedValues(formData, otherCity)
     const nextErrors = validateForm(payload)
@@ -196,36 +248,48 @@ export default function EnquiryForm() {
 
     let submission: EnquirySubmission
     try {
-      submission = getSubmissionForEnquiry(
-        payload,
-        pendingSubmissionsRef.current,
-        () => crypto.randomUUID(),
-      )
-      if (!pendingSubmissionsRef.current.some(({ submissionKey }) => submissionKey === submission.submissionKey)) {
-        const nextPendingSubmissions = addEnquirySubmission(pendingSubmissionsRef.current, submission)
-        saveEnquirySubmissions(window.sessionStorage, nextPendingSubmissions)
-        pendingSubmissionsRef.current = nextPendingSubmissions
-        setPendingSubmissions(nextPendingSubmissions)
+      const existingCurrent = currentSubmissionRef.current
+      if (existingCurrent && isSameEnquiry(payload, existingCurrent.payload)) {
+        submission = getRetrySubmission(existingCurrent)
+      } else {
+        if (existingCurrent) {
+          const nextRecovery = addEnquirySubmission(
+            recoverySubmissionsRef.current,
+            existingCurrent,
+          )
+          recoverySubmissionsRef.current = nextRecovery
+          saveEnquirySubmissions(window.sessionStorage, nextRecovery)
+        }
+
+        submission = getSubmissionForEnquiry(
+          payload,
+          recoverySubmissionsRef.current,
+          () => crypto.randomUUID(),
+        )
+        const remainingRecovery = removeEnquirySubmission(
+          recoverySubmissionsRef.current,
+          submission.submissionKey,
+        )
+        recoverySubmissionsRef.current = remainingRecovery
+        saveEnquirySubmissions(window.sessionStorage, remainingRecovery)
       }
+      saveCurrentEnquirySubmission(window.sessionStorage, submission)
+      currentSubmissionRef.current = submission
     } catch (error) {
-      console.error('Could not save an enquiry retry safely:', error)
+      console.error('Could not save this enquiry safely:', error)
       setStatus('error')
-      setConfirmation('Your enquiry was not sent because its retry details could not be saved safely. Please try again or contact the school.')
+      setCurrentUncertain(false)
+      setConfirmation('Please try again.')
       return
     }
 
     await sendSubmission(submission)
   }
 
-  const handleRetrySavedSubmission = async (submission: EnquirySubmission) => {
-    if (submittingRef.current) return
-    await sendSubmission(getRetrySubmission(submission))
+  const handleRetryCurrentSubmission = async () => {
+    if (submittingRef.current || !currentSubmissionRef.current) return
+    await sendSubmission(getRetrySubmission(currentSubmissionRef.current))
   }
-
-  const currentValues = getSubmittedValues(formData, otherCity)
-  const matchingPendingSubmission = pendingSubmissions.find(
-    (submission) => isSameEnquiry(currentValues, submission.payload),
-  )
 
   return (
     <form className="enquiry-form inline admission-enquiry-form" onSubmit={handleSubmit} noValidate aria-busy={status === 'submitting'}>
@@ -351,29 +415,22 @@ export default function EnquiryForm() {
       <button
         type="submit"
         className="primary-button"
-        disabled={status === 'submitting' || submissionRestoreFailed}
+        disabled={status === 'submitting'}
       >
         {status === 'submitting'
           ? 'Submitting…'
-          : matchingPendingSubmission
-            ? 'Retry Same Enquiry'
-            : pendingSubmissions.length > 0
-              ? 'Submit New Enquiry'
-              : 'Submit Now'}
+          : 'Submit Now'}
       </button>
-      {pendingSubmissions.map((submission, index) => (
-        <div key={submission.submissionKey} className="pending-enquiry-recovery">
-          {index === 0 && <p>Earlier enquiry still needs to be checked.</p>}
-          <button
-            type="button"
-            className="secondary-button"
-            disabled={status === 'submitting'}
-            onClick={() => handleRetrySavedSubmission(submission)}
-          >
-            Check earlier enquiry
-          </button>
-        </div>
-      ))}
+      {currentUncertain && (
+        <button
+          type="button"
+          className="secondary-button"
+          disabled={status === 'submitting'}
+          onClick={handleRetryCurrentSubmission}
+        >
+          Retry
+        </button>
+      )}
       {confirmation && (
         <p className={`enquiry-feedback ${status}`} role={status === 'error' ? 'alert' : 'status'} aria-live="polite">
           {confirmation}
