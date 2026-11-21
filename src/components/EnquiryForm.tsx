@@ -19,7 +19,6 @@ type SubmissionResponse = {
   success?: unknown
   enquiryId?: unknown
   message?: unknown
-  diagnosticError?: unknown
   code?: unknown
 }
 
@@ -38,13 +37,9 @@ const citySuggestions = [
   'Lucknow', 'Mumbai', 'Nagpur', 'Patna', 'Pune', 'Ranchi', 'Surat', 'Other',
 ]
 
-function getSubmissionError(response: Response, result: SubmissionResponse | null) {
-  if (typeof result?.diagnosticError === 'string' && result.diagnosticError.trim()) {
-    return result.diagnosticError
-  }
-  if (typeof result?.message === 'string') return result.message
+function getSubmissionError(response: Response) {
   if (response.status === 503) return 'The enquiry service is not configured. Please contact the school directly.'
-  if (response.status >= 500) return 'The enquiry service could not save your details. Please try again later.'
+  if (response.status >= 500) return 'We could not confirm whether your enquiry was saved. This enquiry has been kept so you can safely check it again.'
   return 'We couldn’t submit your enquiry. Check your details and try again.'
 }
 
@@ -110,6 +105,7 @@ export default function EnquiryForm() {
           'Idempotency-Key': submission.submissionKey,
         },
         body: JSON.stringify(submission.payload),
+        signal: AbortSignal.timeout(60_000),
       })
 
       let result: SubmissionResponse | null = null
@@ -126,7 +122,7 @@ export default function EnquiryForm() {
 
       if (!validJson) {
         setStatus('error')
-        setConfirmation(`The enquiry API returned HTTP ${response.status} without a valid JSON response. Check the Vercel production function logs.`)
+        setConfirmation('We could not confirm whether your enquiry was saved. It has been kept safely for you to check again.')
         return
       }
 
@@ -150,7 +146,7 @@ export default function EnquiryForm() {
           ),
         })
         setStatus('error')
-        setConfirmation(getSubmissionError(response, result))
+        setConfirmation(getSubmissionError(response))
         return
       }
 
@@ -176,8 +172,7 @@ export default function EnquiryForm() {
       setConfirmation(`Thank you. Your enquiry has been received. Reference: ${enquiryId}${cleanupWarning}`)
     } catch (error) {
       const errorName = error instanceof Error ? error.name : 'UnknownError'
-      const errorMessage = error instanceof Error ? error.message.slice(0, 200) : 'Unknown network error'
-      console.error('Enquiry request failed before an API response:', { errorName, errorMessage })
+      console.error('Enquiry request failed before an API response:', { errorName })
       setStatus('error')
       setConfirmation('We couldn’t confirm whether your enquiry was received. Retry this same submission to safely check its status, or contact the school.')
     } finally {
@@ -367,15 +362,17 @@ export default function EnquiryForm() {
               : 'Submit Now'}
       </button>
       {pendingSubmissions.map((submission, index) => (
-        <button
-          key={submission.submissionKey}
-          type="button"
-          className="secondary-button"
-          disabled={status === 'submitting'}
-          onClick={() => handleRetrySavedSubmission(submission)}
-        >
-          Retry Saved Enquiry {index + 1}
-        </button>
+        <div key={submission.submissionKey} className="pending-enquiry-recovery">
+          {index === 0 && <p>Earlier enquiry still needs to be checked.</p>}
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={status === 'submitting'}
+            onClick={() => handleRetrySavedSubmission(submission)}
+          >
+            Check earlier enquiry
+          </button>
+        </div>
       ))}
       {confirmation && (
         <p className={`enquiry-feedback ${status}`} role={status === 'error' ? 'alert' : 'status'} aria-live="polite">

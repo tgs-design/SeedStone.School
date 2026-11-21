@@ -171,7 +171,7 @@ test('rejects invalid JSON returned by Apps Script', async () => {
   assert.ok(!previewLog.includes('user_content_key'))
 })
 
-test('returns the Apps Script failure message and logs its success value', async () => {
+test('does not expose the Apps Script failure message and logs only the success value', async () => {
   process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
   const diagnostics = []
   const originalConsoleInfo = console.info
@@ -197,12 +197,13 @@ test('returns the Apps Script failure message and logs its success value', async
 
   assert.equal(response.statusCode, 502)
   assert.equal(response.body.code, 'APPS_SCRIPT_SUCCESS_NOT_CONFIRMED')
-  assert.equal(response.body.message, 'The Admission Enquiries tab was not found.')
+  assert.equal(response.body.message, 'The enquiry could not be confirmed as saved. Your details have been kept for a safe retry.')
+  assert.equal(JSON.stringify(response.body).includes('Admission Enquiries tab'), false)
   assert.equal(diagnostics[0].details.successValue, false)
   assert.equal(diagnostics[0].details.enquiryIdExists, false)
 })
 
-test('forwards a sanitized Apps Script diagnostic without exposing submitted values', async () => {
+test('does not expose an Apps Script diagnostic or submitted values', async () => {
   process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
   globalThis.fetch = async () => ({
     status: 200,
@@ -227,12 +228,12 @@ test('forwards a sanitized Apps Script diagnostic without exposing submitted val
   }
 
   assert.equal(response.statusCode, 502)
-  assert.equal(response.body.message, 'The enquiry could not be saved to the spreadsheet.')
-  assert.equal(response.body.diagnosticError.includes(requestBody.studentName), false)
-  assert.equal(response.body.diagnosticError.includes(requestBody.parentName), false)
-  assert.equal(response.body.diagnosticError.includes(requestBody.mobile), false)
-  assert.equal(response.body.diagnosticError.includes(submissionKey), false)
-  assert.ok(response.body.diagnosticError.includes('[redacted]'))
+  assert.equal(response.body.message, 'The enquiry could not be confirmed as saved. Your details have been kept for a safe retry.')
+  assert.equal(Object.prototype.hasOwnProperty.call(response.body, 'diagnosticError'), false)
+  assert.equal(JSON.stringify(response.body).includes(requestBody.studentName), false)
+  assert.equal(JSON.stringify(response.body).includes(requestBody.parentName), false)
+  assert.equal(JSON.stringify(response.body).includes(requestBody.mobile), false)
+  assert.equal(JSON.stringify(response.body).includes(submissionKey), false)
 })
 
 test('does not confirm a success body without a non-empty enquiry ID', async () => {
@@ -326,4 +327,59 @@ test('retries the same submission key without appending a duplicate row', async 
     { ...requestBody, submissionKey },
   ])
   assert.equal(appendedRows, 1)
+})
+
+test('rejects malformed JSON payloads', async () => {
+  process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  const request = createRequest()
+  request.body = { ...requestBody, mobile: '123' }
+  const response = createResponse()
+
+  await handler(request, response)
+
+  assert.equal(response.statusCode, 400)
+  assert.equal(response.body.code, 'INVALID_ENQUIRY')
+})
+
+test('rejects unsupported content types', async () => {
+  const request = createRequest()
+  request.headers = { ...request.headers, 'content-type': 'text/plain' }
+  const response = createResponse()
+
+  await handler(request, response)
+
+  assert.equal(response.statusCode, 415)
+  assert.equal(response.body.code, 'INVALID_CONTENT_TYPE')
+})
+
+test('rejects payloads that exceed the request size limit', async () => {
+  process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  const request = createRequest()
+  request.headers = { ...request.headers, 'content-length': '16385' }
+  const response = createResponse()
+
+  await handler(request, response)
+
+  assert.equal(response.statusCode, 413)
+  assert.equal(response.body.code, 'PAYLOAD_TOO_LARGE')
+})
+
+test('allows formula-like names for spreadsheet-safe escaping', async () => {
+  process.env.GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/test-deployment/exec'
+  const request = createRequest()
+  request.body = { ...requestBody, studentName: '=SUM(1,2)' }
+  const response = createResponse()
+  globalThis.fetch = async () => ({
+    status: 200,
+    ok: true,
+    redirected: false,
+    url: 'https://script.google.com/macros/s/test-deployment/exec',
+    headers: { get: () => 'application/json' },
+    text: async () => JSON.stringify({ success: true, enquiryId: 'SS-FORMULA123' }),
+  })
+
+  await handler(request, response)
+
+  assert.equal(response.statusCode, 201)
+  assert.equal(response.body.success, true)
 })

@@ -38,7 +38,9 @@ function doPost(event) {
 
     const studentName = cleanText(data.studentName, 100);
     const parentName = cleanText(data.parentName, 100);
-    const mobileNumber = cleanText(data.mobile, 20);
+    const mobileNumber = normalizeMobileNumber(
+      cleanText(data.mobile, 20)
+    );
     const interestedGrade = cleanText(data.grade, 20);
     const city = cleanText(data.city, 80);
     const submissionKey =
@@ -371,6 +373,13 @@ function isValidMobileNumber(value) {
   return /^(?:\+?91[\s-]?)?[6-9]\d{9}$/.test(value);
 }
 
+function normalizeMobileNumber(value) {
+  return value
+    .replace(/[\s-]/g, '')
+    .replace(/^\+91(?=[6-9]\d{9}$)/, '')
+    .replace(/^91(?=[6-9]\d{9}$)/, '');
+}
+
 function findExistingSubmission(sheet, submissionKey) {
   const lastRow = sheet.getLastRow();
 
@@ -415,7 +424,8 @@ function isSameSubmission(
   return (
     row[2] === safeCellText(studentName) &&
     row[3] === safeCellText(parentName) &&
-    row[4] === safeCellText(mobileNumber) &&
+    normalizeMobileNumber(String(row[4] || '')) ===
+      normalizeMobileNumber(safeCellText(mobileNumber)) &&
     row[5] === interestedGrade &&
     row[6] === safeCellText(city) &&
     row[8] === submissionKey

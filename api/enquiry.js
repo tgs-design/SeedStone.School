@@ -2,14 +2,35 @@ function sendJson(response, statusCode, body) {
   response.statusCode = statusCode
   response.setHeader('Content-Type', 'application/json; charset=utf-8')
   response.setHeader('Cache-Control', 'no-store')
+  response.setHeader('X-Content-Type-Options', 'nosniff')
+  response.setHeader('X-Frame-Options', 'DENY')
+  response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.end(JSON.stringify(body))
 }
 
-function sendApiError(response, statusCode, code, message, diagnosticError) {
-  console.error('Enquiry API error returned to frontend:', { statusCode, code, message })
-  const body = { success: false, code, message }
-  if (typeof diagnosticError === 'string') body.diagnosticError = diagnosticError
-  return sendJson(response, statusCode, body)
+const requestCounts = new Map()
+
+function isRateLimited(request) {
+  const forwarded = request.headers['x-forwarded-for']
+  const ip = typeof forwarded === 'string'
+    ? forwarded.split(',')[0].trim()
+    : (request.headers['x-real-ip'] || request.socket?.remoteAddress || 'unknown')
+  const now = Date.now()
+  const minute = Math.floor(now / 60_000)
+  const key = `${ip}:${minute}`
+  const count = (requestCounts.get(key) || 0) + 1
+  requestCounts.set(key, count)
+  if (requestCounts.size > 200) {
+    for (const existingKey of requestCounts.keys()) {
+      if (!existingKey.endsWith(`:${minute}`)) requestCounts.delete(existingKey)
+    }
+  }
+  return count > 20
+}
+
+function sendApiError(response, statusCode, code, message) {
+  console.error('Enquiry API error:', { statusCode, code })
+  return sendJson(response, statusCode, { success: false, code, message })
 }
 
 function getRequestBody(request) {
@@ -27,8 +48,19 @@ function getRequestBody(request) {
 function validateEnquiry(data) {
   const fields = ['studentName', 'parentName', 'mobile', 'grade', 'city']
   if (!data || fields.some((field) => typeof data[field] !== 'string')) return null
+  if (Object.keys(data).some((field) => !fields.includes(field))) return null
 
   const enquiry = Object.fromEntries(fields.map((field) => [field, data[field].trim()]))
+  if (Object.values(enquiry).some((value) =>
+    Array.from(value).some((character) => {
+      const code = character.charCodeAt(0)
+      return code < 32 || code === 127
+    }),
+  )) return null
+  enquiry.mobile = enquiry.mobile
+    .replace(/[\s-]/g, '')
+    .replace(/^\+91(?=[6-9]\d{9}$)/, '')
+    .replace(/^91(?=[6-9]\d{9}$)/, '')
   if (
     !enquiry.studentName ||
     enquiry.studentName.length > 100 ||
@@ -115,6 +147,31 @@ export default async function handler(request, response) {
     return sendApiError(response, 405, 'METHOD_NOT_ALLOWED', 'Use POST to submit an enquiry.')
   }
 
+  const contentType = request.headers['content-type']
+  if (typeof contentType === 'string' && !/^application\/json(?:;|$)/i.test(contentType)) {
+    return sendApiError(response, 415, 'INVALID_CONTENT_TYPE', 'Submit the enquiry form again.')
+  }
+
+  const contentLength = Number(request.headers['content-length'])
+  if (Number.isFinite(contentLength) && contentLength > 16_384) {
+    return sendApiError(response, 413, 'PAYLOAD_TOO_LARGE', 'Check the enquiry details and try again.')
+  }
+
+  const requestBody = getRequestBody(request)
+  if (Buffer.byteLength(JSON.stringify(requestBody ?? {}), 'utf8') > 16_384) {
+    return sendApiError(response, 413, 'PAYLOAD_TOO_LARGE', 'Check the enquiry details and try again.')
+  }
+
+  const allowedOrigin = process.env.SEEDSTONE_ALLOWED_ORIGIN
+  const origin = request.headers.origin
+  if (allowedOrigin && (typeof origin !== 'string' || origin !== allowedOrigin)) {
+    return sendApiError(response, 403, 'ORIGIN_NOT_ALLOWED', 'This enquiry request is not allowed.')
+  }
+
+  if (isRateLimited(request)) {
+    return sendApiError(response, 429, 'RATE_LIMITED', 'Please wait a moment before submitting another enquiry.')
+  }
+
   const appsScriptUrl = getAppsScriptUrl()
   if (!appsScriptUrl) {
     return sendApiError(
@@ -142,7 +199,7 @@ export default async function handler(request, response) {
       body: JSON.stringify({ ...enquiry, submissionKey }),
       redirect: 'follow',
       cache: 'no-store',
-      signal: AbortSignal.timeout(25_000),
+      signal: AbortSignal.timeout(55_000),
     })
     const responseText = await appsScriptResponse.text()
     let result = null
@@ -182,7 +239,7 @@ export default async function handler(request, response) {
         response,
         502,
         'APPS_SCRIPT_HTTP_ERROR',
-        `The Apps Script deployment returned HTTP ${appsScriptResponse.status}. Check its deployment access settings.`,
+        'The enquiry could not be confirmed as saved. Your details have been kept for a safe retry.',
       )
     }
 
@@ -195,23 +252,16 @@ export default async function handler(request, response) {
         response,
         502,
         'APPS_SCRIPT_INVALID_JSON',
-        'Apps Script returned an invalid response instead of JSON. Check the web app deployment.',
+        'The enquiry could not be confirmed as saved. Your details have been kept for a safe retry.',
       )
     }
 
     if (!result || typeof result !== 'object' || Array.isArray(result) || result.success !== true) {
-      const appsScriptMessage = typeof result?.message === 'string'
-        ? sanitizeResponsePreview(result.message, enquiry, submissionKey).trim()
-        : ''
-      const diagnosticError = typeof result?.diagnosticError === 'string'
-        ? sanitizeResponsePreview(result.diagnosticError, enquiry, submissionKey).trim()
-        : ''
       return sendApiError(
         response,
         502,
         'APPS_SCRIPT_SUCCESS_NOT_CONFIRMED',
-        appsScriptMessage || 'The enquiry could not be confirmed as saved. Please contact the school before retrying.',
-        diagnosticError || undefined,
+        'The enquiry could not be confirmed as saved. Your details have been kept for a safe retry.',
       )
     }
 
@@ -220,17 +270,14 @@ export default async function handler(request, response) {
         response,
         502,
         'APPS_SCRIPT_ENQUIRY_ID_MISSING',
-        'Apps Script confirmed success but did not return an enquiry ID. The save could not be verified.',
+        'The enquiry could not be confirmed as saved. Your details have been kept for a safe retry.',
       )
     }
 
     return sendJson(response, 201, { success: true, enquiryId: result.enquiryId.trim() })
   } catch (error) {
     const errorName = error instanceof Error ? error.name : 'UnknownError'
-    const errorMessage = error instanceof Error
-      ? sanitizeResponsePreview(error.message, enquiry, submissionKey)
-      : 'Unknown error'
-    console.error('Apps Script enquiry request failed:', { errorName, errorMessage })
+    console.error('Apps Script enquiry request failed:', { errorName })
     if (errorName === 'TimeoutError' || errorName === 'AbortError') {
       return sendApiError(
         response,
